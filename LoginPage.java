@@ -8,11 +8,13 @@ public class LoginPage extends JFrame {
     JLabel lblTitle, lblUser, lblPass; // Labels
     JTextField tfUser; // Text Field
     JPasswordField pfPass; // Password Field
-    JButton btnRegister, btnLogin, btnExit; // Buttons
+    JButton btnRegister, btnLogin; // Buttons
 
     public LoginPage() {
         setTitle("Login Page");
+
         JPanel panel = new JPanel();
+        panel.setBackground(new Color(0, 0, 128)); // Navy blue background
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
@@ -22,32 +24,36 @@ public class LoginPage extends JFrame {
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
         lblTitle = new JLabel("Welcome to JAWA");
-        lblTitle.setFont(new Font("SansSerif", Font.BOLD, 24));
+        lblTitle.setFont(new Font("SansSerif", Font.BOLD, 28));
         titlePanel.add(lblTitle);
 
         lblUser = new JLabel("Username:");
+        lblUser.setFont(new Font("SansSerif", Font.BOLD, 15));
         userPanel.add(lblUser);
 
         tfUser = new JTextField();
+        tfUser.setFont(new Font("Arial", Font.PLAIN, 13));
         userPanel.add(tfUser);
 
         lblPass = new JLabel("Password:");
+        lblPass.setFont(new Font("SansSerif", Font.BOLD, 15));
         passPanel.add(lblPass);
 
-        tfUser.setPreferredSize(new Dimension(100, 20));
+        tfUser.setPreferredSize(new Dimension(175, 25));
         pfPass = new JPasswordField();
+        pfPass.setFont(new Font("Arial", Font.PLAIN, 16));
         passPanel.add(pfPass);
-        pfPass.setPreferredSize(new Dimension(100, 20));
+        pfPass.setPreferredSize(new Dimension(175, 25));
 
         btnLogin = new JButton("Login"); // Login button
+        btnLogin.setFont(new Font("SansSerif", Font.BOLD, 15));
+        btnLogin.setPreferredSize(new Dimension(100, 30));
         btnPanel.add(btnLogin);
 
         btnRegister = new JButton("Register");
+        btnRegister.setFont(new Font("SansSerif", Font.BOLD, 15));
+        btnRegister.setPreferredSize(new Dimension(100, 30));
         btnPanel.add(btnRegister);
-
-        // btnExit = new JButton("Exit"); // Exit button
-        // btnExit.setBackground(Color.RED);
-        // btnPanel.add(btnExit);
 
         panel.add(titlePanel);
         panel.add(userPanel);
@@ -64,30 +70,14 @@ public class LoginPage extends JFrame {
             login();
         });
 
-        // btnExit.addActionListener(e -> {
-        // System.exit(0);
-        // });
-
-        setSize(300, 200);
+        setSize(400, 300);
         setLocationRelativeTo(null);
         setVisible(true);
     }
 
     private void register() {
-        String username = tfUser.getText(); // get username text
-        String password = new String(pfPass.getPassword()); // get password text
-        if (username.matches("^[a-zA-Z][a-zA-Z0-9_]{5,12}$")
-                && password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$")) {
-            try (FileWriter fw = new FileWriter("user.txt", true)) {
-                fw.write(username + "," + password + "\n");
-                JOptionPane.showMessageDialog(this, "Welcome " + username, "Register", JOptionPane.INFORMATION_MESSAGE);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-            JOptionPane.showMessageDialog(this, "ERROR: Invalid Username or Password", "ERROR",
-                    JOptionPane.ERROR_MESSAGE);
-        }
+        dispose();
+        new RegisterPage();
     }
 
     private void login() {
@@ -95,7 +85,7 @@ public class LoginPage extends JFrame {
         String password = new String(pfPass.getPassword()); // get password text
         boolean correct = false;
 
-        try (Scanner scanner = new Scanner(new File("user.txt"))) {
+        try (Scanner scanner = new Scanner(new File("credentials.txt"))) {
             while (scanner.hasNextLine()) {
                 String[] usertxt = scanner.nextLine().split(",");
                 if (usertxt[0].equals(username) && usertxt[1].equals(password)) {
@@ -112,7 +102,7 @@ public class LoginPage extends JFrame {
             JOptionPane.showMessageDialog(this, "Successfully Logged In", "Login",
                     JOptionPane.INFORMATION_MESSAGE);
             dispose();
-            // new ChatClient(username);
+            // new BankPage(checkingBalance, savingsBalance, accountNumber);
         } else {
             JOptionPane.showMessageDialog(this, "ERROR: Incorrect Username or Password", "Login",
                     JOptionPane.ERROR_MESSAGE);
