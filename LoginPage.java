@@ -81,31 +81,31 @@ public class LoginPage extends JFrame {
     }
 
     private void login() {
-        String username = tfUser.getText(); // get username text
-        String password = new String(pfPass.getPassword()); // get password text
-        boolean correct = false;
+        String username = tfUser.getText();
+        String password = new String(pfPass.getPassword());
 
         try (Scanner scanner = new Scanner(new File("credentials.txt"))) {
             while (scanner.hasNextLine()) {
                 String[] usertxt = scanner.nextLine().split(",");
-                if (usertxt[0].equals(username) && usertxt[1].equals(password)) {
-                    correct = true;
-                    break;
+
+                if (usertxt.length >= 6 && usertxt[0].equals(username) && usertxt[1].equals(password)) {
+                    double savings = Double.parseDouble(usertxt[2]);
+                    double checking = Double.parseDouble(usertxt[3]);
+                    double accountNumber = Double.parseDouble(usertxt[5]);
+
+                    JOptionPane.showMessageDialog(this, "Successfully Logged In", "Login",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    dispose();
+                    new BankWelcomePage(username, checking, savings, accountNumber).setVisible(true);
+                    return;
                 }
             }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "ERROR: File Not Found", "ERROR",
-                    JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        if (correct) {
-            JOptionPane.showMessageDialog(this, "Successfully Logged In", "Login",
-                    JOptionPane.INFORMATION_MESSAGE);
-            dispose();
-            // new BankPage(checkingBalance, savingsBalance, accountNumber);
-        } else {
             JOptionPane.showMessageDialog(this, "ERROR: Incorrect Username or Password", "Login",
                     JOptionPane.ERROR_MESSAGE);
+        } catch (FileNotFoundException e) {
+            JOptionPane.showMessageDialog(this, "ERROR: File Not Found", "Login", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "ERROR: " + e.getMessage(), "Login", JOptionPane.ERROR_MESSAGE);
         }
     }
 
