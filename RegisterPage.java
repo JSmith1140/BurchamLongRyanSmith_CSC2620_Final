@@ -101,7 +101,7 @@ public class RegisterPage extends Frame {
         });
     }
 
-    private void register() {
+      private void register() {
         String username = tfUser.getText();
         String password = new String(pfPass.getPassword());
         String savings = tfSavings.getText();
@@ -120,8 +120,20 @@ public class RegisterPage extends Frame {
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
-        } else {
-            showMessage("Error", "Invalid username or password format.",
+        } else if (!username.matches("^[a-zA-Z][a-zA-Z0-9_]{5,12}$")) {
+            showMessage("Error", "Username must be Alphanumeric, 5–12 characters",
+                    JOptionPane.ERROR_MESSAGE);
+        } else if (!password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$")) {
+            showMessage("Error", "Password must be at least 8 characters, 1 digit, 1 uppercase, 1 special character",
+                    JOptionPane.ERROR_MESSAGE);
+        } else if (!savings.matches("\\d+(\\.\\d{1,2})?")) {
+            showMessage("Error", "Savings Initial Balance Must be a number",
+                    JOptionPane.ERROR_MESSAGE);
+        } else if (!current.matches("\\d+(\\.\\d{1,2})?")) {
+            showMessage("Error", "Current Initial Balance Must be a number",
+                    JOptionPane.ERROR_MESSAGE);
+        } else if (!pin.matches("\\d{4}")) {
+            showMessage("Error", "PIN must be 4-Digits",
                     JOptionPane.ERROR_MESSAGE);
         }
     }
