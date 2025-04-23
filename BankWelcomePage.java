@@ -1,5 +1,8 @@
+
 import javax.swing.*;
 import java.awt.*;
+import java.util.Objects;
+
 
 public class BankWelcomePage extends JFrame {
     private double checkingBalance;
@@ -7,10 +10,10 @@ public class BankWelcomePage extends JFrame {
     private double prevCheckingBalance = 1100.00;
     private double prevSavingsBalance = 3200.00;
     private double accountNumber;
-    private String username;
+    private String username = "User";
+    private JTabbedPane tabbedPane;
 
-    public BankWelcomePage(String username, double checkingBalance, double savingsBalance, double accountNumber) {
-        this.username = username;
+    public BankWelcomePage(double checkingBalance, double savingsBalance, double accountNumber) {
         this.checkingBalance = checkingBalance;
         this.savingsBalance = savingsBalance;
         this.accountNumber = accountNumber;
@@ -24,17 +27,15 @@ public class BankWelcomePage extends JFrame {
     }
 
     private void initUI() {
-        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane = new JTabbedPane();
 
         // Home Tab
         JPanel homePanel = createHomeTab();
         tabbedPane.addTab("🏠 Home", homePanel);
 
         // Placeholder Tabs
-        tabbedPane.addTab("👛 Transactions",
-                new JPanel(new FlowLayout(FlowLayout.LEFT)).add(new JLabel("Transactions coming soon.")));
-        tabbedPane.addTab("👤 Accounts",
-                new JPanel(new FlowLayout(FlowLayout.LEFT)).add(new JLabel("Account info coming soon.")));
+        tabbedPane.addTab("👛 Transactions", new TransactionsPanel(this));
+        tabbedPane.addTab("👤 Accounts", new AccountTab(checkingBalance, savingsBalance, accountNumber));
 
         add(tabbedPane);
     }
@@ -95,7 +96,8 @@ public class BankWelcomePage extends JFrame {
         panel.setPreferredSize(new Dimension(200, 100));
         panel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.GRAY, 2),
-                BorderFactory.createEmptyBorder(10, 10, 10, 10)));
+                BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        ));
 
         JLabel titleLabel = new JLabel(title, SwingConstants.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 14));
@@ -119,7 +121,34 @@ public class BankWelcomePage extends JFrame {
         return panel;
     }
 
-    public static void main(String[] args) {
+    public boolean updateCheckingBalance(double amount) {
+        if (checkingBalance + amount < 0) return false;
+        checkingBalance += amount;
+        return true;
+    }
+    
+    public boolean updateSavingsBalance(double amount) {
+        if (savingsBalance + amount < 0) return false;
+        savingsBalance += amount;
+        return true;
+    }
+    
+    public void goToHomeTab() {
+        tabbedPane.setSelectedIndex(0);
+        getContentPane().removeAll();
+        initUI(); // Refresh to reflect updated balances
+        revalidate();
+        repaint();
+    }
+    
 
+    public static void main(String[] args) {
+        double checking = 1200.75;
+        double savings = 3400.25;
+        double accountNumber = 123456789;
+
+        SwingUtilities.invokeLater(() -> {
+            new BankWelcomePage(checking, savings, accountNumber).setVisible(true);
+        });
     }
 }
