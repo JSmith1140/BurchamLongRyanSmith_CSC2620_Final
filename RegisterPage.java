@@ -107,12 +107,18 @@ public class RegisterPage extends Frame {
         String savings = tfSavings.getText();
         String current = tfCurrent.getText();
         String pin = new String(pfPin.getPassword());
+
         if (username.matches("^[a-zA-Z][a-zA-Z0-9_]{5,12}$")
                 && password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$")
                 && savings.matches("\\d+(\\.\\d{1,2})?") && current.matches("\\d+(\\.\\d{1,2})?")
                 && pin.matches("\\d{4}")) {
+            String accountNumber = String.format("%010d", new java.util.Random().nextLong() % 1_000_000_0000L);
+            if (accountNumber.startsWith("-")) {
+                accountNumber = accountNumber.substring(1);
+            }
             try (FileWriter fw = new FileWriter("credentials.txt", true)) {
-                fw.write(username + "," + password + "," + savings + "," + current + "," + pin + "\n");
+                fw.write(username + "," + password + "," + savings + "," + current + "," + pin + "," + accountNumber
+                        + "\n");
                 showMessage("Success", "Account created successfully!",
                         JOptionPane.INFORMATION_MESSAGE);
                 dispose();
