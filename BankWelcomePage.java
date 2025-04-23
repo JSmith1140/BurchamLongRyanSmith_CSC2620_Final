@@ -10,10 +10,11 @@ public class BankWelcomePage extends JFrame {
     private double prevCheckingBalance = 1100.00;
     private double prevSavingsBalance = 3200.00;
     private double accountNumber;
-    private String username = "User";
+    private String username;
     private JTabbedPane tabbedPane;
 
-    public BankWelcomePage(double checkingBalance, double savingsBalance, double accountNumber) {
+    public BankWelcomePage(String username, double checkingBalance, double savingsBalance, double accountNumber) {
+        this.username = username;
         this.checkingBalance = checkingBalance;
         this.savingsBalance = savingsBalance;
         this.accountNumber = accountNumber;
@@ -143,12 +144,6 @@ public class BankWelcomePage extends JFrame {
     
 
     public static void main(String[] args) {
-        double checking = 1200.75;
-        double savings = 3400.25;
-        double accountNumber = 123456789;
-
-        SwingUtilities.invokeLater(() -> {
-            new BankWelcomePage(checking, savings, accountNumber).setVisible(true);
-        });
+    
     }
 }
