@@ -1,7 +1,6 @@
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class TransactionsPanel extends JPanel {
     private BankWelcomePage parentFrame;
@@ -9,43 +8,90 @@ public class TransactionsPanel extends JPanel {
     public TransactionsPanel(BankWelcomePage parentFrame) {
         this.parentFrame = parentFrame;
         setLayout(new GridBagLayout());
+        setBackground(new Color(240, 248, 255)); // Soft pastel background
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.insets = new Insets(15, 15, 15, 15);
+        gbc.fill = GridBagConstraints.BOTH;
 
-        JLabel actionLabel = new JLabel("Select Transaction:");
+        Font labelFont = new Font("Segoe UI", Font.BOLD, 14);
+        Font fieldFont = new Font("Segoe UI", Font.PLAIN, 14);
+
+        Color boxBg = new Color(250, 250, 250);
+        Color radioBg = new Color(245, 245, 245);
+
+        // Transaction Type Panel
+        JPanel transactionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        transactionPanel.setBackground(boxBg);
+        transactionPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.GRAY),
+                "Transaction Type", TitledBorder.LEFT, TitledBorder.TOP, labelFont));
+
         JRadioButton depositButton = new JRadioButton("Deposit");
         JRadioButton withdrawButton = new JRadioButton("Withdraw");
+        depositButton.setBackground(radioBg);
+        withdrawButton.setBackground(radioBg);
+
         ButtonGroup actionGroup = new ButtonGroup();
         actionGroup.add(depositButton);
         actionGroup.add(withdrawButton);
 
-        JLabel accountLabel = new JLabel("Choose Account:");
+        transactionPanel.add(depositButton);
+        transactionPanel.add(withdrawButton);
+
+        // Account Type Panel
+        JPanel accountPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        accountPanel.setBackground(boxBg);
+        accountPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.GRAY),
+                "Account Type", TitledBorder.LEFT, TitledBorder.TOP, labelFont));
+
         JRadioButton checkingButton = new JRadioButton("Checking");
         JRadioButton savingsButton = new JRadioButton("Savings");
+        checkingButton.setBackground(radioBg);
+        savingsButton.setBackground(radioBg);
+
         ButtonGroup accountGroup = new ButtonGroup();
         accountGroup.add(checkingButton);
         accountGroup.add(savingsButton);
 
-        JLabel amountLabel = new JLabel("Enter Amount:");
-        JTextField amountField = new JTextField(10);
+        accountPanel.add(checkingButton);
+        accountPanel.add(savingsButton);
 
+        // Amount Panel
+        JPanel amountPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        amountPanel.setBackground(boxBg);
+        amountPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.GRAY),
+                "Amount", TitledBorder.LEFT, TitledBorder.TOP, labelFont));
+
+        JTextField amountField = new JTextField(12);
+        amountField.setFont(fieldFont);
+        amountField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.GRAY, 1),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)
+        ));
+        amountPanel.add(amountField);
+
+        // Confirm Button
         JButton confirmButton = new JButton("OK");
+        confirmButton.setBackground(new Color(30, 144, 255));
+        confirmButton.setForeground(Color.WHITE);
+        confirmButton.setFocusPainted(false);
+        confirmButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        confirmButton.setPreferredSize(new Dimension(100, 35));
 
         // Layout
-        gbc.gridx = 0; gbc.gridy = 0; add(actionLabel, gbc);
-        gbc.gridx = 1; gbc.gridy = 0; add(depositButton, gbc);
-        gbc.gridx = 2; gbc.gridy = 0; add(withdrawButton, gbc);
+        gbc.gridx = 0; gbc.gridy = 0;
+        add(transactionPanel, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 1; add(accountLabel, gbc);
-        gbc.gridx = 1; gbc.gridy = 1; add(checkingButton, gbc);
-        gbc.gridx = 2; gbc.gridy = 1; add(savingsButton, gbc);
+        gbc.gridy = 1;
+        add(accountPanel, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 2; add(amountLabel, gbc);
-        gbc.gridx = 1; gbc.gridy = 2; gbc.gridwidth = 2; add(amountField, gbc);
+        gbc.gridy = 2;
+        add(amountPanel, gbc);
 
-        gbc.gridx = 1; gbc.gridy = 3; gbc.gridwidth = 1; add(confirmButton, gbc);
+        gbc.gridy = 3;
+        add(confirmButton, gbc);
 
+        // Action Listener
         confirmButton.addActionListener(e -> {
             try {
                 double amount = Double.parseDouble(amountField.getText());
@@ -81,7 +127,6 @@ public class TransactionsPanel extends JPanel {
                     }
                 }
 
-                // Redirect to Home
                 parentFrame.goToHomeTab();
 
             } catch (NumberFormatException ex) {
