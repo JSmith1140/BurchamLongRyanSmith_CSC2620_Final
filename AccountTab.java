@@ -9,10 +9,12 @@ public class AccountTab extends JPanel {
     private double checkingBalance;
     private double savingsBalance;
     private final double accountNumber;
+    private String username;
 
     private JTextArea txtTransactions;
 
-    public AccountTab(double checking, double savings, double accountNumber) {
+    public AccountTab(String username, double checking, double savings, double accountNumber) {
+        this.username = username;
         this.checkingBalance = checking;
         this.savingsBalance = savings;
         this.accountNumber = accountNumber;
@@ -63,7 +65,7 @@ public class AccountTab extends JPanel {
                         logTransaction("Transferred $" + amount + " to Checking");
                         JOptionPane.showMessageDialog(this, "Successfully transferred to Checking.");
                         SwingUtilities.getWindowAncestor(this).dispose();
-                        new BankWelcomePage(checkingBalance, savingsBalance, accountNumber).setVisible(true);
+                        new BankWelcomePage(username, checkingBalance, savingsBalance, accountNumber).setVisible(true);
                     } else {
                         JOptionPane.showMessageDialog(this, "Insufficient savings balance.");
                     }
@@ -74,7 +76,7 @@ public class AccountTab extends JPanel {
                         logTransaction("Transferred $" + amount + " to Savings");
                         JOptionPane.showMessageDialog(this, "Successfully transferred to Savings.");
                         SwingUtilities.getWindowAncestor(this).dispose();
-                        new BankWelcomePage(checkingBalance, savingsBalance, accountNumber).setVisible(true);
+                        new BankWelcomePage(username, checkingBalance, savingsBalance, accountNumber).setVisible(true);
                     } else {
                         JOptionPane.showMessageDialog(this, "Insufficient checking balance.");
                     }
@@ -103,7 +105,7 @@ public class AccountTab extends JPanel {
         JButton btnExit = new JButton("Exit to Home");
         btnExit.addActionListener(e -> {
             SwingUtilities.getWindowAncestor(this).dispose();
-            new BankWelcomePage(checkingBalance, savingsBalance, accountNumber).setVisible(true);
+            new BankWelcomePage(username, checkingBalance, savingsBalance, accountNumber).setVisible(true);
         });
 
         panel.add(new JScrollPane(txtTransactions), BorderLayout.CENTER);
