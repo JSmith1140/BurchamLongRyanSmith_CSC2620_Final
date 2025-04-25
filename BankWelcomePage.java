@@ -36,7 +36,7 @@ public class BankWelcomePage extends JFrame {
 
         // Placeholder Tabs
         tabbedPane.addTab("👛 Transactions", new TransactionsPanel(this));
-        tabbedPane.addTab("👤 Accounts", new AccountTab(checkingBalance, savingsBalance, accountNumber));
+        tabbedPane.addTab("👤 Accounts", new AccountTab(username, checkingBalance, savingsBalance, accountNumber));
 
         add(tabbedPane);
     }
