@@ -122,7 +122,8 @@ public class TransactionsPanel extends JPanel {
                     if (success) {
                         JOptionPane.showMessageDialog(this, "Withdrew $" + amount + " from " + (isChecking ? "Checking" : "Savings"));
                     } else {
-                        JOptionPane.showMessageDialog(this, "Insufficient funds for this withdrawal.");
+                        JOptionPane.showMessageDialog(this, "Insufficient funds for this withdrawal.", "Withdraw",
+                                JOptionPane.ERROR_MESSAGE);
                         return;
                     }
                 }
