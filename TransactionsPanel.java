@@ -106,7 +106,8 @@ public class TransactionsPanel extends JPanel {
                 boolean isSavings = savingsButton.isSelected();
 
                 if (!(isDeposit || isWithdraw) || !(isChecking || isSavings)) {
-                    JOptionPane.showMessageDialog(this, "Please select all options.");
+                    JOptionPane.showMessageDialog(this, "Please select all options.", "Message",
+                            JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
@@ -131,7 +132,8 @@ public class TransactionsPanel extends JPanel {
                 parentFrame.goToHomeTab();
 
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Invalid amount entered.");
+                JOptionPane.showMessageDialog(this, "Invalid amount entered.", "Message",
+                        JOptionPane.ERROR_MESSAGE);
             }
         });
     }
