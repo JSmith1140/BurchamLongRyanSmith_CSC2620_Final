@@ -67,7 +67,8 @@ public class AccountTab extends JPanel {
                         SwingUtilities.getWindowAncestor(this).dispose();
                         new BankWelcomePage(username, checkingBalance, savingsBalance, accountNumber).setVisible(true);
                     } else {
-                        JOptionPane.showMessageDialog(this, "Insufficient savings balance.");
+                        JOptionPane.showMessageDialog(this, "Insufficient Savings Balance.", "Transfer",
+                                JOptionPane.ERROR_MESSAGE);
                     }
                 } else if (toSavings.isSelected()) {
                     if (checkingBalance >= amount) {
@@ -78,10 +79,12 @@ public class AccountTab extends JPanel {
                         SwingUtilities.getWindowAncestor(this).dispose();
                         new BankWelcomePage(username, checkingBalance, savingsBalance, accountNumber).setVisible(true);
                     } else {
-                        JOptionPane.showMessageDialog(this, "Insufficient checking balance.");
+                         JOptionPane.showMessageDialog(this, "Insufficient Checking Balance.", "Transfer",
+                                JOptionPane.ERROR_MESSAGE);
                     }
                 } else {
-                    JOptionPane.showMessageDialog(this, "Please select an account.");
+                    JOptionPane.showMessageDialog(this, "Please select an account.", "Transfer",
+                            JOptionPane.ERROR_MESSAGE);
                 }
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this, "Enter a valid amount.");
