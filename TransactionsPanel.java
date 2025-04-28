@@ -96,7 +96,8 @@ public class TransactionsPanel extends JPanel {
             try {
                 double amount = Double.parseDouble(amountField.getText());
                 if (amount <= 0) {
-                    JOptionPane.showMessageDialog(this, "Amount must be positive.");
+                    JOptionPane.showMessageDialog(this, "Amount must be positive.", "Message",
+                            JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
@@ -106,7 +107,8 @@ public class TransactionsPanel extends JPanel {
                 boolean isSavings = savingsButton.isSelected();
 
                 if (!(isDeposit || isWithdraw) || !(isChecking || isSavings)) {
-                    JOptionPane.showMessageDialog(this, "Please select all options.");
+                    JOptionPane.showMessageDialog(this, "Please select all options.", "Message",
+                            JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
@@ -131,7 +133,8 @@ public class TransactionsPanel extends JPanel {
                         JOptionPane.showMessageDialog(this,
                                 "Withdrew $" + amount + " from " + (isChecking ? "Checking" : "Savings"));
                     } else {
-                        JOptionPane.showMessageDialog(this, "Insufficient funds for this withdrawal.");
+                        JOptionPane.showMessageDialog(this, "Insufficient funds for this withdrawal.", "Withdraw",
+                                JOptionPane.ERROR_MESSAGE);
                         return;
                     }
                 }
@@ -139,7 +142,8 @@ public class TransactionsPanel extends JPanel {
                 parentFrame.goToHomeTab();
 
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Invalid amount entered.");
+                JOptionPane.showMessageDialog(this, "Invalid amount entered.", "Message",
+                        JOptionPane.ERROR_MESSAGE);
             }
         });
     }
