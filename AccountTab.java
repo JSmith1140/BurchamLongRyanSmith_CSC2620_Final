@@ -27,7 +27,6 @@ public class AccountTab extends JPanel {
 
         // Tabs
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("Balances", createBalancePanel());
         tabbedPane.addTab("Transfer", createTransferPanel());
         tabbedPane.addTab("Transaction history", createTransactionPanel());
 
@@ -50,30 +49,6 @@ public class AccountTab extends JPanel {
         bottomPanel.add(btnExit);
 
         add(bottomPanel, BorderLayout.SOUTH);
-    }
-
-    private JPanel createBalancePanel() {
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(new Color(240, 248, 255));
-
-        JLabel lblChecking = new JLabel("Checking: $" + String.format("%.2f", checkingBalance));
-        JLabel lblSavings = new JLabel("Savings: $" + String.format("%.2f", savingsBalance));
-
-        lblChecking.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        lblSavings.setFont(new Font("Segoe UI", Font.BOLD, 16));
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.anchor = GridBagConstraints.CENTER;
-        gbc.insets = new Insets(10, 10, 10, 10);
-
-        gbc.gridy = 0;
-        panel.add(lblChecking, gbc);
-
-        gbc.gridy = 1;
-        panel.add(lblSavings, gbc);
-
-        return panel;
     }
 
     private JPanel createTransferPanel() {
@@ -187,4 +162,3 @@ public class AccountTab extends JPanel {
         }
     }
 }
-//
