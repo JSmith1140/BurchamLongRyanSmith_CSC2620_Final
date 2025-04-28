@@ -30,18 +30,26 @@ public class BankWelcomePage extends JFrame {
 
     private void initUI() {
         tabbedPane = new JTabbedPane();
-
+    
         // Home Tab
         JPanel homePanel = createHomeTab();
         tabbedPane.addTab("🏠 Home", homePanel);
-
+    
         // Placeholder Tabs
         tabbedPane.addTab("👛 Transactions", new TransactionsPanel(this));
-        tabbedPane.addTab("👤 Accounts",
-                new AccountTab(username, checkingBalance, savingsBalance, accountNumber, this));
-
+        tabbedPane.addTab("👤 Accounts", new AccountTab(username, checkingBalance, savingsBalance, accountNumber, this));
+    
+        // Set tab colors after adding all tabs
+        Color tabColor = new Color(0, 122, 255); // Bright blue color 
+    
+        for (int i = 0; i < tabbedPane.getTabCount(); i++) {
+            tabbedPane.setBackgroundAt(i, tabColor); // Tab background
+            tabbedPane.setForegroundAt(i, Color.WHITE); // Tab text color 
+        }
+    
         add(tabbedPane);
     }
+    
 
     private JPanel createHomeTab() {
         double totalBalance = checkingBalance + savingsBalance;
