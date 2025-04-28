@@ -1,0 +1,85 @@
+@startuml Bank Class Diagram
+' Login Page class
+class LoginPage {
+    - lblTitle : JLabel
+    - lblUser : JLabel
+    - lblPass : JLabel
+    - tfUser : JTextField
+    - pfPass : JPasswordField
+    - btnRegister : JButton
+    - btnLogin : JButton
+    + LoginPage()
+    - register() : void
+    - login() : void
+}
+
+' RegisterPage class
+class RegisterPage {
+    - lblTitle : JLabel
+    - lblUser : JLabel
+    - lblPass : JLabel
+    - lblSavings : JLabel
+    - lblChecking : JLabel
+    - lblPin : JLabel
+    - tfUser : JTextField
+    - tfSavings : JTextField
+    - tfChecking : JTextField
+    - pfPass : JPasswordField
+    - pfPin : JPasswordField
+    - btnRegister : JButton
+    - btnExit : JButton
+    + RegisterPage()
+    - register() : void
+    - showMessage(title: String, message: String, type: int) : void
+}
+
+' BankWelcomePage class
+class BankWelcomePage {
+    - checkingBalance : double
+    - savingsBalance : double
+    - prevCheckingBalance : double
+    - prevSavingsBalance : double
+    - accountNumber : double
+    - username : String
+    - tabbedPane : JTabbedPane
+    + BankWelcomePage(username: String, checkingBalance: double, savingsBalance: double, accountNumber: double)
+    - initUI() : void
+    - createHomeTab() : JPanel
+    - createAccountBox(title : String, balance : double, change : double) : JPanel
+    + updateCheckingBalance(amount : double) : boolean
+    + updateSavingsBalance(amount : double) : boolean
+    + goToHomeTab() : void
+    + updateCredentialsFile() : void
+    + setCheckingBalance(checkingBalance : double) : void
+    + setSavingsBalance(savingsBalance : double) : void
+}
+
+' TransactionsPanel Class
+class TransactionsPanel {
+    - parentFrame : BankWelcomePage
+    + TransactionsPanel(parentFrame : BankWelcomePage)
+}
+
+' AccountTab class
+class AccountTab {
+    - checkingBalance : double
+    - savingsBalance : double
+    - accountNumber : double
+    - username : String
+    - parentFrame : BankWelcomePage
+    - txtTransactions : JTextArea
+    + AccountTab(String username, double checking, double savings, double accountNumber, BankWelcomePage parentFrame)
+    - JPanel createBalancePanel()
+    - JPanel createTransferPanel()
+    - JPanel createTransactionPanel()
+    - void logTransaction(String message)
+    - void loadTransactions()
+}
+
+' Relations
+LoginPage --> RegisterPage : opens when register button is pressed
+LoginPage --> BankWelcomePage : opens when user successfully logs in
+RegisterPage --> LoginPage : opens after registration
+TransactionsPanel --> BankWelcomePage : uses BankWelcomePage
+AccountTab --> BankWelcomePage : uses BankWelcomePage
+@enduml
