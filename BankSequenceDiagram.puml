@@ -1,0 +1,81 @@
+@startuml Bank Sequence Diagram
+actor User
+participant "Login Page" as Login
+participant "Register Page" as Register
+participant "Bank System" as System
+participant "Text File" as TextFile
+participant "Home Screen" as Home
+participant "Transaction Tab" as Transaction
+participant "Account Tab" as Account
+
+== Login or Create Account ==
+User -> Login : Enter username/password
+alt Login Success
+    Login -> System : Authenticate credentials
+    System -> Login : Auth success
+    Login -> Home : Show Welcome screen
+else Create Account
+    User -> Register : Enter username, password, balances, pin
+    Register -> System : Create account
+    System -> TextFile : Write account info to file
+    TextFile --> System : Confirm write
+    System -> Register : Success
+    Register -> Home : Show Welcome screen
+end
+
+== View Balances ==
+User -> Account : View balances
+Account -> System : Fetch checkings/savings
+System -> Account : Return balances
+Account -> User : Show balances
+
+== Withdraw ==
+User -> Transaction : Select Withdraw
+Transaction -> User : Select account, enter amount
+Transaction -> System : Process withdrawal
+System -> System : Update account balance
+System -> TextFile : Log transaction
+TextFile --> System : Confirm
+System -> Transaction : Success
+Transaction -> Home : Back to home
+
+== Deposit ==
+User -> Transaction : Select Deposit
+Transaction -> User : Select account, enter amount
+Transaction -> System : Process deposit
+System -> System : Update account balance
+System -> TextFile : Log transaction
+TextFile --> System : Confirm
+System -> Transaction : Success
+Transaction -> Home : Back to home
+
+== Send/Request Money ==
+User -> Transaction : Select Send/Request
+Transaction -> User : Enter user, account type, amount
+Transaction -> System : Connect to user
+System -> System : Verify connection
+Transaction -> User : Enter PIN / Accept request
+Transaction -> System : Process send/request
+System -> TextFile : Log transaction
+TextFile --> System : Confirm
+System -> Transaction : Success
+Transaction -> Home : Back to home
+
+== Transfer Between Accounts ==
+User -> Account : Select Transfer
+Account -> User : Select account type, enter amount
+Account -> System : Process internal transfer
+System -> TextFile : Log transaction
+TextFile --> System : Confirm
+System -> Account : Success
+Account -> Home : Back to home
+
+== Show Previous Transactions ==
+User -> Account : View previous transactions
+Account -> TextFile : Read transaction log
+TextFile --> Account : Return logs
+Account -> User : Show logs
+
+== Exit ==
+User -> Home : Exit to home
+@enduml
