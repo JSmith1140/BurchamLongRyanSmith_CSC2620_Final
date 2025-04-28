@@ -10,14 +10,17 @@ public class AccountTab extends JPanel {
     private double savingsBalance;
     private final double accountNumber;
     private String username;
+    private BankWelcomePage parentFrame;
 
     private JTextArea txtTransactions;
 
-    public AccountTab(String username, double checking, double savings, double accountNumber) {
+    public AccountTab(String username, double checking, double savings, double accountNumber,
+            BankWelcomePage parentFrame) {
         this.username = username;
         this.checkingBalance = checking;
         this.savingsBalance = savings;
         this.accountNumber = accountNumber;
+        this.parentFrame = parentFrame;
 
         setLayout(new BorderLayout());
 
@@ -63,6 +66,11 @@ public class AccountTab extends JPanel {
                         savingsBalance -= amount;
                         checkingBalance += amount;
                         logTransaction("Transferred $" + amount + " to Checking");
+
+                        parentFrame.setCheckingBalance(checkingBalance);
+                        parentFrame.setSavingsBalance(savingsBalance);
+
+                        parentFrame.updateCredentialsFile();
                         JOptionPane.showMessageDialog(this, "Successfully transferred to Checking.");
                         SwingUtilities.getWindowAncestor(this).dispose();
                         new BankWelcomePage(username, checkingBalance, savingsBalance, accountNumber).setVisible(true);
@@ -75,11 +83,16 @@ public class AccountTab extends JPanel {
                         checkingBalance -= amount;
                         savingsBalance += amount;
                         logTransaction("Transferred $" + amount + " to Savings");
+
+                        parentFrame.setCheckingBalance(checkingBalance);
+                        parentFrame.setSavingsBalance(savingsBalance);
+
+                        parentFrame.updateCredentialsFile();
                         JOptionPane.showMessageDialog(this, "Successfully transferred to Savings.");
                         SwingUtilities.getWindowAncestor(this).dispose();
                         new BankWelcomePage(username, checkingBalance, savingsBalance, accountNumber).setVisible(true);
                     } else {
-                         JOptionPane.showMessageDialog(this, "Insufficient Checking Balance.", "Transfer",
+                        JOptionPane.showMessageDialog(this, "Insufficient Checking Balance.", "Transfer",
                                 JOptionPane.ERROR_MESSAGE);
                     }
                 } else {
