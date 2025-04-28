@@ -49,12 +49,15 @@ public class BankWelcomePage extends JFrame {
         double savingsChange = savingsBalance - prevSavingsBalance;
 
         JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.setBackground(new Color(240, 248, 255)); // Updated background color
 
         // Top Panel (Welcome + Account)
         JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setBackground(new Color(240, 248, 255)); // Updated background color
         topPanel.setBorder(BorderFactory.createEmptyBorder(15, 20, 0, 20));
 
         JPanel welcomePanel = new JPanel();
+        welcomePanel.setBackground(new Color(240, 248, 255)); // Updated background color
         welcomePanel.setLayout(new BoxLayout(welcomePanel, BoxLayout.Y_AXIS));
         JLabel welcomeLabel = new JLabel("Welcome to JAWA, " + username + "!");
         welcomeLabel.setFont(new Font("Arial", Font.BOLD, 16));
@@ -69,6 +72,7 @@ public class BankWelcomePage extends JFrame {
 
         // Center Panel
         JPanel centerPanel = new JPanel();
+        centerPanel.setBackground(new Color(240, 248, 255)); // Updated background color
         centerPanel.setLayout(new BorderLayout());
 
         JLabel totalLabel = new JLabel("Total Balance: $" + String.format("%.2f", totalBalance), SwingConstants.CENTER);
@@ -76,6 +80,7 @@ public class BankWelcomePage extends JFrame {
         totalLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 10, 0));
 
         JPanel boxesPanel = new JPanel(new GridLayout(1, 2, 30, 10));
+        boxesPanel.setBackground(new Color(240, 248, 255)); // Updated background color
         boxesPanel.setBorder(BorderFactory.createEmptyBorder(10, 80, 20, 80));
 
         JPanel checkingPanel = createAccountBox("Checking Account", checkingBalance, checkingChange);
@@ -95,6 +100,7 @@ public class BankWelcomePage extends JFrame {
 
     private JPanel createAccountBox(String title, double balance, double change) {
         JPanel panel = new JPanel();
+        panel.setBackground(new Color(240, 248, 255)); // Updated background color
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setPreferredSize(new Dimension(200, 100));
         panel.setBorder(BorderFactory.createCompoundBorder(
