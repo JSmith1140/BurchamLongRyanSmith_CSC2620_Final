@@ -1,14 +1,15 @@
-
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.Objects;
-
+import java.util.Scanner;
 
 public class BankWelcomePage extends JFrame {
     private double checkingBalance;
     private double savingsBalance;
-    private double prevCheckingBalance = 1100.00;
-    private double prevSavingsBalance = 3200.00;
+    private double prevCheckingBalance = 0;
+    private double prevSavingsBalance = 0;
     private double accountNumber;
     private String username;
     private JTabbedPane tabbedPane;
@@ -36,7 +37,8 @@ public class BankWelcomePage extends JFrame {
 
         // Placeholder Tabs
         tabbedPane.addTab("👛 Transactions", new TransactionsPanel(this));
-        tabbedPane.addTab("👤 Accounts", new AccountTab(username, checkingBalance, savingsBalance, accountNumber));
+        tabbedPane.addTab("👤 Accounts",
+                new AccountTab(username, checkingBalance, savingsBalance, accountNumber, this));
 
         add(tabbedPane);
     }
@@ -97,8 +99,7 @@ public class BankWelcomePage extends JFrame {
         panel.setPreferredSize(new Dimension(200, 100));
         panel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.GRAY, 2),
-                BorderFactory.createEmptyBorder(10, 10, 10, 10)
-        ));
+                BorderFactory.createEmptyBorder(10, 10, 10, 10)));
 
         JLabel titleLabel = new JLabel(title, SwingConstants.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 14));
@@ -123,17 +124,19 @@ public class BankWelcomePage extends JFrame {
     }
 
     public boolean updateCheckingBalance(double amount) {
-        if (checkingBalance + amount < 0) return false;
+        if (checkingBalance + amount < 0)
+            return false;
         checkingBalance += amount;
         return true;
     }
-    
+
     public boolean updateSavingsBalance(double amount) {
-        if (savingsBalance + amount < 0) return false;
+        if (savingsBalance + amount < 0)
+            return false;
         savingsBalance += amount;
         return true;
     }
-    
+
     public void goToHomeTab() {
         tabbedPane.setSelectedIndex(0);
         getContentPane().removeAll();
@@ -141,9 +144,46 @@ public class BankWelcomePage extends JFrame {
         revalidate();
         repaint();
     }
-    
+
+    public void updateCredentialsFile() {
+        try {
+            File file = new File("credentials.txt");
+            Scanner scanner = new Scanner(file);
+            StringBuilder updatedAccounts = new StringBuilder();
+
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] parts = line.split(",");
+
+                if (parts.length >= 6 && parts[0].equals(username)) {
+                    parts[2] = String.format("%.2f", savingsBalance);
+                    parts[3] = String.format("%.2f", checkingBalance);
+                    line = String.join(",", parts);
+                }
+
+                updatedAccounts.append(line).append(System.lineSeparator());
+            }
+
+            scanner.close();
+
+            FileWriter writer = new FileWriter(file);
+            writer.write(updatedAccounts.toString());
+            writer.close();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error updating credentials file: " + e.getMessage(),
+                    "File Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public void setCheckingBalance(double checkingBalance) {
+        this.checkingBalance = checkingBalance;
+    }
+
+    public void setSavingsBalance(double savingsBalance) {
+        this.savingsBalance = savingsBalance;
+    }
 
     public static void main(String[] args) {
-    
+
     }
 }
