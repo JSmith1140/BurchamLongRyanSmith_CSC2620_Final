@@ -1,7 +1,7 @@
+import java.net.Socket;
+import java.io.*;
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
-import java.io.FileWriter;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -30,27 +30,100 @@ public class BankWelcomePage extends JFrame {
 
     private void initUI() {
         tabbedPane = new JTabbedPane();
-    
+
         // Home Tab
         JPanel homePanel = createHomeTab();
         tabbedPane.addTab("🏠 Home", homePanel);
-    
+
         // Placeholder Tabs
         tabbedPane.addTab("👛 Transactions", new TransactionsPanel(this));
-        tabbedPane.addTab("👤 Accounts", new AccountTab(username, checkingBalance, savingsBalance, accountNumber, this));
-    
-        // Set tab colors after adding all tabs
-        Color tabColor = new Color(0, 122, 255); // Bright blue color 
-    
-        for (int i = 0; i < tabbedPane.getTabCount(); i++) {
-            tabbedPane.setBackgroundAt(i, tabColor); // Tab background
-            tabbedPane.setForegroundAt(i, Color.WHITE); // Tab text color 
-        }
-    
+        tabbedPane.addTab("👤 Accounts",
+                new AccountTab(username, checkingBalance, savingsBalance, accountNumber, this));
+
         add(tabbedPane);
     }
-    
+private Socket liveSocket;
+private BufferedReader liveIn;
+private PrintWriter liveOut;
 
+public void startLiveConnection() {
+    try {
+        liveSocket = new Socket("localhost", 5000);
+        liveOut = new PrintWriter(liveSocket.getOutputStream(), true);
+        liveIn = new BufferedReader(new InputStreamReader(liveSocket.getInputStream()));
+
+        // Send login
+        liveOut.println("LOGIN:" + username);
+
+        // Start a thread to listen
+        new ClientReceiverThread(this, liveIn).start();
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}
+public boolean verifyPin(String pin) {
+    try (Scanner scanner = new Scanner(new File("credentials.txt"))) {
+        while (scanner.hasNextLine()) {
+            String[] user = scanner.nextLine().split(",");
+            if (user.length >= 6 && user[0].equals(username)) {
+                return user[4].equals(pin);
+            }
+        }
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+    return false;
+}
+
+public boolean sendMoneyToUser(String recipientUsername, double amount, boolean fromChecking) {
+    try (Socket socket = new Socket("localhost", 5000);
+         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+
+        String accountType = fromChecking ? "checking" : "savings";
+        out.println(username + "," + recipientUsername + "," + amount + "," + accountType);
+
+        String response = in.readLine();
+        if ("SUCCESS".equals(response)) {
+            if (fromChecking) {
+                if (checkingBalance >= amount) {
+                    checkingBalance -= amount;
+                    updateCredentialsFile();
+                    return true;
+                }
+            } else {
+                if (savingsBalance >= amount) {
+                    savingsBalance -= amount;
+                    updateCredentialsFile();
+                    return true;
+                }
+            }
+        } else {
+            System.out.println("Server error: " + response);
+        }
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+    return false;
+}
+
+public void logRequestToUser(String otherUsername, double amount) {
+    try (FileWriter fw = new FileWriter("requests.txt", true)) {
+        fw.write(username + " requested $" + amount + " from " + otherUsername + "\n");
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}
+public void receiveLiveMoney(String sender, double amount, String accountType) {
+    if (accountType.equalsIgnoreCase("checking")) {
+        checkingBalance += amount;
+    } else {
+        savingsBalance += amount;
+    }
+    updateCredentialsFile();
+    JOptionPane.showMessageDialog(this, "You received $" + amount + " from " + sender + " into " + accountType + " account!");
+    goToHomeTab();
+}
     private JPanel createHomeTab() {
         double totalBalance = checkingBalance + savingsBalance;
         double checkingChange = checkingBalance - prevCheckingBalance;
