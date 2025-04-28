@@ -66,8 +66,7 @@ public class TransactionsPanel extends JPanel {
         amountField.setFont(fieldFont);
         amountField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.GRAY, 1),
-                BorderFactory.createEmptyBorder(5, 5, 5, 5)
-        ));
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
         amountPanel.add(amountField);
 
         // Confirm Button
@@ -79,7 +78,8 @@ public class TransactionsPanel extends JPanel {
         confirmButton.setPreferredSize(new Dimension(100, 35));
 
         // Layout
-        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
         add(transactionPanel, gbc);
 
         gbc.gridy = 1;
@@ -106,25 +106,32 @@ public class TransactionsPanel extends JPanel {
                 boolean isSavings = savingsButton.isSelected();
 
                 if (!(isDeposit || isWithdraw) || !(isChecking || isSavings)) {
-                    JOptionPane.showMessageDialog(this, "Please select all options.", "Message",
-                            JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Please select all options.");
                     return;
                 }
 
                 if (isDeposit) {
-                    if (isChecking) parentFrame.updateCheckingBalance(amount);
-                    else parentFrame.updateSavingsBalance(amount);
-                    JOptionPane.showMessageDialog(this, "Deposited $" + amount + " to " + (isChecking ? "Checking" : "Savings"));
+                    if (isChecking)
+                        parentFrame.updateCheckingBalance(amount);
+                    else
+                        parentFrame.updateSavingsBalance(amount);
+
+                    parentFrame.updateCredentialsFile();
+                    JOptionPane.showMessageDialog(this,
+                            "Deposited $" + amount + " to " + (isChecking ? "Checking" : "Savings"));
                 } else {
                     boolean success;
-                    if (isChecking) success = parentFrame.updateCheckingBalance(-amount);
-                    else success = parentFrame.updateSavingsBalance(-amount);
+                    if (isChecking)
+                        success = parentFrame.updateCheckingBalance(-amount);
+                    else
+                        success = parentFrame.updateSavingsBalance(-amount);
 
                     if (success) {
-                        JOptionPane.showMessageDialog(this, "Withdrew $" + amount + " from " + (isChecking ? "Checking" : "Savings"));
+                        parentFrame.updateCredentialsFile();
+                        JOptionPane.showMessageDialog(this,
+                                "Withdrew $" + amount + " from " + (isChecking ? "Checking" : "Savings"));
                     } else {
-                        JOptionPane.showMessageDialog(this, "Insufficient funds for this withdrawal.", "Withdraw",
-                                JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(this, "Insufficient funds for this withdrawal.");
                         return;
                     }
                 }
@@ -132,8 +139,7 @@ public class TransactionsPanel extends JPanel {
                 parentFrame.goToHomeTab();
 
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Invalid amount entered.", "Message",
-                        JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Invalid amount entered.");
             }
         });
     }
