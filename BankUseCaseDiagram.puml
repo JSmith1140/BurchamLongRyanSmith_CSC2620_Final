@@ -1,0 +1,57 @@
+@startuml Bank Use Case Diagram
+
+left to right direction 
+
+skinparam actorStyle Hollow
+actor "User" as U
+
+' Login/Register screens
+rectangle "Login/Register" {
+  usecase "Sign In with Username and Password" as UC1
+  usecase "Create Account" as UC2
+  usecase "Save Account Info to File" as UC3
+}
+
+' Bank Welcome Screen
+rectangle "Bank Welcome Screen" {
+  usecase "View Home Screen" as UC4
+  usecase "Show Total Balance" as UC5
+  usecase "Show Savings Balance" as UC6
+  usecase "Show Checking Balance" as UC7
+  usecase "Go to Transactions Tab" as UC8
+  usecase "Go to Account Tab" as UC9
+}
+
+' Transaction Tab
+rectangle "Transactions Tab" {
+  usecase "Withdraw Money" as UC11
+  usecase "Deposit Money" as UC12
+  usecase "Send Money" as UC13
+  usecase "Request Money" as UC14
+}
+
+' Account Tab
+rectangle "Account Tab" {
+  usecase "Show Balances" as UC15
+  usecase "Transfer Between Accounts" as UC16
+  usecase "Show Transaction History" as UC17
+  usecase "Exit to Home Screen" as UC18
+}
+
+' Relations
+U --> UC1 : Log In
+U --> UC2 : Register
+
+UC1 --> UC4 : Go to Welcome Screen
+UC2 --> UC3
+UC2 --> UC1
+
+UC4 --> UC5
+UC4 --> UC6
+UC4 --> UC7
+UC4 --> UC8
+UC4 --> UC9
+
+UC8 --> "Transactions Tab"
+UC9 --> "Account Tab"
+@enduml 
