@@ -15,7 +15,7 @@ public class AccountTab extends JPanel {
     private JTextArea txtTransactions;
 
     public AccountTab(String username, double checking, double savings, double accountNumber,
-            BankWelcomePage parentFrame) {
+                      BankWelcomePage parentFrame) {
         this.username = username;
         this.checkingBalance = checking;
         this.savingsBalance = savings;
@@ -23,29 +23,63 @@ public class AccountTab extends JPanel {
         this.parentFrame = parentFrame;
 
         setLayout(new BorderLayout());
+        setBackground(new Color(240, 248, 255)); // Soft pastel background
 
+        // Tabs
         JTabbedPane tabbedPane = new JTabbedPane();
-
         tabbedPane.addTab("Balances", createBalancePanel());
         tabbedPane.addTab("Transfer", createTransferPanel());
         tabbedPane.addTab("Transaction history", createTransactionPanel());
 
         add(tabbedPane, BorderLayout.CENTER);
+
+        // Exit Button
+        JButton btnExit = new JButton("Exit to Home");
+        btnExit.setBackground(new Color(30, 144, 255)); // Blue background
+        btnExit.setForeground(Color.WHITE);              // White text
+        btnExit.setFocusPainted(false);
+        btnExit.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnExit.setPreferredSize(new Dimension(150, 40));
+        btnExit.addActionListener(e -> {
+            SwingUtilities.getWindowAncestor(this).dispose();
+            new BankWelcomePage(username, checkingBalance, savingsBalance, accountNumber).setVisible(true);
+        });
+
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setBackground(new Color(240, 248, 255));
+        bottomPanel.add(btnExit);
+
+        add(bottomPanel, BorderLayout.SOUTH);
     }
 
     private JPanel createBalancePanel() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(new Color(240, 248, 255));
+
         JLabel lblChecking = new JLabel("Checking: $" + String.format("%.2f", checkingBalance));
         JLabel lblSavings = new JLabel("Savings: $" + String.format("%.2f", savingsBalance));
-        panel.add(lblChecking);
-        panel.add(lblSavings);
+
+        lblChecking.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lblSavings.setFont(new Font("Segoe UI", Font.BOLD, 16));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.insets = new Insets(10, 10, 10, 10);
+
+        gbc.gridy = 0;
+        panel.add(lblChecking, gbc);
+
+        gbc.gridy = 1;
+        panel.add(lblSavings, gbc);
+
         return panel;
     }
 
     private JPanel createTransferPanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(new Color(240, 248, 255));
 
         JRadioButton toChecking = new JRadioButton("To Checking");
         JRadioButton toSavings = new JRadioButton("To Savings");
@@ -57,6 +91,11 @@ public class AccountTab extends JPanel {
         txtAmount.setMaximumSize(new Dimension(200, 25));
 
         JButton btnTransfer = new JButton("Transfer");
+        btnTransfer.setBackground(new Color(30, 144, 255));
+        btnTransfer.setForeground(Color.WHITE);
+        btnTransfer.setFocusPainted(false);
+        btnTransfer.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnTransfer.setPreferredSize(new Dimension(150, 40));
 
         btnTransfer.addActionListener(e -> {
             try {
@@ -115,17 +154,13 @@ public class AccountTab extends JPanel {
 
     private JPanel createTransactionPanel() {
         JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(new Color(240, 248, 255));
+
         txtTransactions = new JTextArea(15, 30);
         txtTransactions.setEditable(false);
-
-        JButton btnExit = new JButton("Exit to Home");
-        btnExit.addActionListener(e -> {
-            SwingUtilities.getWindowAncestor(this).dispose();
-            new BankWelcomePage(username, checkingBalance, savingsBalance, accountNumber).setVisible(true);
-        });
+        txtTransactions.setBackground(new Color(240, 248, 255));
 
         panel.add(new JScrollPane(txtTransactions), BorderLayout.CENTER);
-        panel.add(btnExit, BorderLayout.SOUTH);
 
         loadTransactions();
         return panel;
