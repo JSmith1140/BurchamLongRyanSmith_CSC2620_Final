@@ -123,45 +123,78 @@ public boolean sendMoneyToUser(String recipient, double amount, boolean fromChec
         double savingsChange = savingsBalance - prevSavingsBalance;
 
         JPanel panel = new JPanel(new BorderLayout(10, 10));
-        panel.setBackground(new Color(240, 248, 255));
+        panel.setBackground(new Color(240, 248, 255)); // Updated background color
 
+        // Top Panel (Welcome + Account)
         JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBackground(new Color(240, 248, 255));
+        topPanel.setBackground(new Color(240, 248, 255)); // Updated background color
         topPanel.setBorder(BorderFactory.createEmptyBorder(15, 20, 0, 20));
 
-        JPanel welcomePanel = new JPanel();
-        welcomePanel.setBackground(new Color(240, 248, 255));
-        welcomePanel.setLayout(new BoxLayout(welcomePanel, BoxLayout.Y_AXIS));
+        JPanel infoPanel = new JPanel();
+        infoPanel.setBackground(new Color(240, 248, 255));
+        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.X_AXIS));
+
+        // === Load and add the image ===
+        ImageIcon originalIcon = null;
+        try {
+            originalIcon = new ImageIcon(getClass().getResource("JAWABankImage.jpg")); // <-- Download the JPG Image in the GITHUB and put it in your folder
+        } catch (Exception e) {
+            System.out.println("Image not found!");
+        }
+
+        if (originalIcon != null) {
+            Image scaledImage = originalIcon.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH);
+            ImageIcon scaledIcon = new ImageIcon(scaledImage);
+            JLabel imageLabel = new JLabel(scaledIcon);
+            imageLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 10)); // Margin between image and text
+            infoPanel.add(imageLabel);
+        }
+
+        // === Welcome Text ===
+        JPanel welcomeTextPanel = new JPanel();
+        welcomeTextPanel.setLayout(new BoxLayout(welcomeTextPanel, BoxLayout.Y_AXIS));
+        welcomeTextPanel.setBackground(new Color(240, 248, 255));
+
         JLabel welcomeLabel = new JLabel("Welcome to JAWA, " + username + "!");
         welcomeLabel.setFont(new Font("Arial", Font.BOLD, 16));
+
         JLabel accountNumberLabel = new JLabel("Account #: " + String.format("%.0f", accountNumber));
         accountNumberLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-        welcomePanel.add(welcomeLabel);
-        welcomePanel.add(Box.createRigidArea(new Dimension(0, 5)));
-        welcomePanel.add(accountNumberLabel);
-        welcomePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        topPanel.add(welcomePanel, BorderLayout.WEST);
+        welcomeTextPanel.add(welcomeLabel);
+        welcomeTextPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        welcomeTextPanel.add(accountNumberLabel);
 
-        JPanel centerPanel = new JPanel(new BorderLayout());
-        centerPanel.setBackground(new Color(240, 248, 255));
+        infoPanel.add(welcomeTextPanel);
+
+        // Add the infoPanel to the WEST of topPanel
+        topPanel.add(infoPanel, BorderLayout.WEST);
+
+        // Center Panel
+        JPanel centerPanel = new JPanel();
+        centerPanel.setBackground(new Color(240, 248, 255)); // Updated background color
+        centerPanel.setLayout(new BorderLayout());
 
         JLabel totalLabel = new JLabel("Total Balance: $" + String.format("%.2f", totalBalance), SwingConstants.CENTER);
         totalLabel.setFont(new Font("Arial", Font.BOLD, 24));
         totalLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 10, 0));
 
         JPanel boxesPanel = new JPanel(new GridLayout(1, 2, 30, 10));
-        boxesPanel.setBackground(new Color(240, 248, 255));
+        boxesPanel.setBackground(new Color(240, 248, 255)); // Updated background color
         boxesPanel.setBorder(BorderFactory.createEmptyBorder(10, 80, 20, 80));
 
-        boxesPanel.add(createAccountBox("Checking Account", checkingBalance, checkingChange));
-        boxesPanel.add(createAccountBox("Savings Account", savingsBalance, savingsChange));
+        JPanel checkingPanel = createAccountBox("Checking Account", checkingBalance, checkingChange);
+        JPanel savingsPanel = createAccountBox("Savings Account", savingsBalance, savingsChange);
+
+        boxesPanel.add(checkingPanel);
+        boxesPanel.add(savingsPanel);
 
         centerPanel.add(totalLabel, BorderLayout.NORTH);
         centerPanel.add(boxesPanel, BorderLayout.CENTER);
 
         panel.add(topPanel, BorderLayout.NORTH);
         panel.add(centerPanel, BorderLayout.CENTER);
+
         return panel;
     }
 
