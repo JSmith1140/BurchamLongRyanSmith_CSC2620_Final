@@ -14,6 +14,14 @@ public class BankWelcomePage extends JFrame {
     private String username;
     private JTabbedPane tabbedPane;
 
+    // ✅ Server IP (change this to your actual server IP if needed)
+    private static final String SERVER_IP = "10.1.40.19";
+    private static final int SERVER_PORT = 5000;
+
+    private Socket liveSocket;
+    private BufferedReader liveIn;
+    private PrintWriter liveOut;
+
     public BankWelcomePage(String username, double checkingBalance, double savingsBalance, double accountNumber) {
         this.username = username;
         this.checkingBalance = checkingBalance;
@@ -30,115 +38,112 @@ public class BankWelcomePage extends JFrame {
 
     private void initUI() {
         tabbedPane = new JTabbedPane();
-
-        // Home Tab
-        JPanel homePanel = createHomeTab();
-        tabbedPane.addTab("🏠 Home", homePanel);
-
-        // Placeholder Tabs
+        tabbedPane.addTab("🏠 Home", createHomeTab());
         tabbedPane.addTab("👛 Transactions", new TransactionsPanel(this));
         tabbedPane.addTab("👤 Accounts",
                 new AccountTab(username, checkingBalance, savingsBalance, accountNumber, this));
-
         add(tabbedPane);
     }
-private Socket liveSocket;
-private BufferedReader liveIn;
-private PrintWriter liveOut;
 
-public void startLiveConnection() {
-    try {
-        liveSocket = new Socket("localhost", 5000);
-        liveOut = new PrintWriter(liveSocket.getOutputStream(), true);
-        liveIn = new BufferedReader(new InputStreamReader(liveSocket.getInputStream()));
+    // ✅ Connect to server with IP
+    public void startLiveConnection() {
+        try {
+            liveSocket = new Socket(SERVER_IP, SERVER_PORT);
+            liveOut = new PrintWriter(liveSocket.getOutputStream(), true);
+            liveIn = new BufferedReader(new InputStreamReader(liveSocket.getInputStream()));
 
-        // Send login
-        liveOut.println("LOGIN:" + username);
-
-        // Start a thread to listen
-        new ClientReceiverThread(this, liveIn).start();
-    } catch (IOException e) {
-        e.printStackTrace();
-    }
-}
-public boolean verifyPin(String pin) {
-    try (Scanner scanner = new Scanner(new File("credentials.txt"))) {
-        while (scanner.hasNextLine()) {
-            String[] user = scanner.nextLine().split(",");
-            if (user.length >= 6 && user[0].equals(username)) {
-                return user[4].equals(pin);
-            }
+            liveOut.println("LOGIN:" + username); // Identify this user
+            new ClientReceiverThread(this, liveIn).start(); // Start listening for messages
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Failed to connect to transaction server at " + SERVER_IP,
+                    "Connection Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
-    } catch (IOException e) {
-        e.printStackTrace();
     }
-    return false;
-}
 
-public boolean sendMoneyToUser(String recipientUsername, double amount, boolean fromChecking) {
-    try (Socket socket = new Socket("localhost", 5000);
-         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+    public boolean verifyPin(String pin) {
+        try (Scanner scanner = new Scanner(new File("credentials.txt"))) {
+            while (scanner.hasNextLine()) {
+                String[] user = scanner.nextLine().split(",");
+                if (user.length >= 6 && user[0].equals(username)) {
+                    return user[4].equals(pin);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 
-        String accountType = fromChecking ? "checking" : "savings";
-        out.println(username + "," + recipientUsername + "," + amount + "," + accountType);
+    // ✅ Send money via server IP, not localhost
+    public boolean sendMoneyToUser(String recipientUsername, double amount, boolean fromChecking) {
+        try (Socket socket = new Socket(SERVER_IP, SERVER_PORT);
+             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
-        String response = in.readLine();
-        if ("SUCCESS".equals(response)) {
-            if (fromChecking) {
-                if (checkingBalance >= amount) {
-                    checkingBalance -= amount;
-                    updateCredentialsFile();
-                    return true;
+            String accountType = fromChecking ? "checking" : "savings";
+            out.println(username + "," + recipientUsername + "," + amount + "," + accountType);
+
+            String response = in.readLine();
+            if ("SUCCESS".equals(response)) {
+                if (fromChecking) {
+                    if (checkingBalance >= amount) {
+                        checkingBalance -= amount;
+                        updateCredentialsFile();
+                        return true;
+                    }
+                } else {
+                    if (savingsBalance >= amount) {
+                        savingsBalance -= amount;
+                        updateCredentialsFile();
+                        return true;
+                    }
                 }
             } else {
-                if (savingsBalance >= amount) {
-                    savingsBalance -= amount;
-                    updateCredentialsFile();
-                    return true;
-                }
+                System.out.println("Server error: " + response);
             }
-        } else {
-            System.out.println("Server error: " + response);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Could not reach server at " + SERVER_IP,
+                    "Transfer Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
-    } catch (IOException e) {
-        e.printStackTrace();
+        return false;
     }
-    return false;
-}
 
-public void logRequestToUser(String otherUsername, double amount) {
-    try (FileWriter fw = new FileWriter("requests.txt", true)) {
-        fw.write(username + " requested $" + amount + " from " + otherUsername + "\n");
-    } catch (IOException e) {
-        e.printStackTrace();
+    public void logRequestToUser(String otherUsername, double amount) {
+        try (FileWriter fw = new FileWriter("requests.txt", true)) {
+            fw.write(username + " requested $" + amount + " from " + otherUsername + "\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
-}
-public void receiveLiveMoney(String sender, double amount, String accountType) {
-    if (accountType.equalsIgnoreCase("checking")) {
-        checkingBalance += amount;
-    } else {
-        savingsBalance += amount;
+
+    public void receiveLiveMoney(String sender, double amount, String accountType) {
+        if (accountType.equalsIgnoreCase("checking")) {
+            checkingBalance += amount;
+        } else {
+            savingsBalance += amount;
+        }
+        updateCredentialsFile();
+        JOptionPane.showMessageDialog(this,
+                "You received $" + amount + " from " + sender + " into your " + accountType + " account!");
+        goToHomeTab();
     }
-    updateCredentialsFile();
-    JOptionPane.showMessageDialog(this, "You received $" + amount + " from " + sender + " into " + accountType + " account!");
-    goToHomeTab();
-}
+
     private JPanel createHomeTab() {
         double totalBalance = checkingBalance + savingsBalance;
         double checkingChange = checkingBalance - prevCheckingBalance;
         double savingsChange = savingsBalance - prevSavingsBalance;
 
         JPanel panel = new JPanel(new BorderLayout(10, 10));
-        panel.setBackground(new Color(240, 248, 255)); // Updated background color
+        panel.setBackground(new Color(240, 248, 255));
 
-        // Top Panel (Welcome + Account)
         JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBackground(new Color(240, 248, 255)); // Updated background color
+        topPanel.setBackground(new Color(240, 248, 255));
         topPanel.setBorder(BorderFactory.createEmptyBorder(15, 20, 0, 20));
 
         JPanel welcomePanel = new JPanel();
-        welcomePanel.setBackground(new Color(240, 248, 255)); // Updated background color
+        welcomePanel.setBackground(new Color(240, 248, 255));
         welcomePanel.setLayout(new BoxLayout(welcomePanel, BoxLayout.Y_AXIS));
         JLabel welcomeLabel = new JLabel("Welcome to JAWA, " + username + "!");
         welcomeLabel.setFont(new Font("Arial", Font.BOLD, 16));
@@ -151,37 +156,31 @@ public void receiveLiveMoney(String sender, double amount, String accountType) {
 
         topPanel.add(welcomePanel, BorderLayout.WEST);
 
-        // Center Panel
-        JPanel centerPanel = new JPanel();
-        centerPanel.setBackground(new Color(240, 248, 255)); // Updated background color
-        centerPanel.setLayout(new BorderLayout());
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.setBackground(new Color(240, 248, 255));
 
         JLabel totalLabel = new JLabel("Total Balance: $" + String.format("%.2f", totalBalance), SwingConstants.CENTER);
         totalLabel.setFont(new Font("Arial", Font.BOLD, 24));
         totalLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 10, 0));
 
         JPanel boxesPanel = new JPanel(new GridLayout(1, 2, 30, 10));
-        boxesPanel.setBackground(new Color(240, 248, 255)); // Updated background color
+        boxesPanel.setBackground(new Color(240, 248, 255));
         boxesPanel.setBorder(BorderFactory.createEmptyBorder(10, 80, 20, 80));
 
-        JPanel checkingPanel = createAccountBox("Checking Account", checkingBalance, checkingChange);
-        JPanel savingsPanel = createAccountBox("Savings Account", savingsBalance, savingsChange);
-
-        boxesPanel.add(checkingPanel);
-        boxesPanel.add(savingsPanel);
+        boxesPanel.add(createAccountBox("Checking Account", checkingBalance, checkingChange));
+        boxesPanel.add(createAccountBox("Savings Account", savingsBalance, savingsChange));
 
         centerPanel.add(totalLabel, BorderLayout.NORTH);
         centerPanel.add(boxesPanel, BorderLayout.CENTER);
 
         panel.add(topPanel, BorderLayout.NORTH);
         panel.add(centerPanel, BorderLayout.CENTER);
-
         return panel;
     }
 
     private JPanel createAccountBox(String title, double balance, double change) {
         JPanel panel = new JPanel();
-        panel.setBackground(new Color(240, 248, 255)); // Updated background color
+        panel.setBackground(new Color(240, 248, 255));
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setPreferredSize(new Dimension(200, 100));
         panel.setBorder(BorderFactory.createCompoundBorder(
@@ -206,20 +205,17 @@ public void receiveLiveMoney(String sender, double amount, String accountType) {
         panel.add(balanceLabel);
         panel.add(Box.createRigidArea(new Dimension(0, 5)));
         panel.add(changeLabel);
-
         return panel;
     }
 
     public boolean updateCheckingBalance(double amount) {
-        if (checkingBalance + amount < 0)
-            return false;
+        if (checkingBalance + amount < 0) return false;
         checkingBalance += amount;
         return true;
     }
 
     public boolean updateSavingsBalance(double amount) {
-        if (savingsBalance + amount < 0)
-            return false;
+        if (savingsBalance + amount < 0) return false;
         savingsBalance += amount;
         return true;
     }
@@ -227,7 +223,7 @@ public void receiveLiveMoney(String sender, double amount, String accountType) {
     public void goToHomeTab() {
         tabbedPane.setSelectedIndex(0);
         getContentPane().removeAll();
-        initUI(); // Refresh to reflect updated balances
+        initUI();
         revalidate();
         repaint();
     }
@@ -241,18 +237,15 @@ public void receiveLiveMoney(String sender, double amount, String accountType) {
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
                 String[] parts = line.split(",");
-
                 if (parts.length >= 6 && parts[0].equals(username)) {
                     parts[2] = String.format("%.2f", savingsBalance);
                     parts[3] = String.format("%.2f", checkingBalance);
                     line = String.join(",", parts);
                 }
-
                 updatedAccounts.append(line).append(System.lineSeparator());
             }
 
             scanner.close();
-
             FileWriter writer = new FileWriter(file);
             writer.write(updatedAccounts.toString());
             writer.close();
@@ -271,6 +264,7 @@ public void receiveLiveMoney(String sender, double amount, String accountType) {
     }
 
     public static void main(String[] args) {
-
+        // For testing
+        // new BankWelcomePage("user1", 1000.0, 2000.0, 1234567890).startLiveConnection();
     }
 }
