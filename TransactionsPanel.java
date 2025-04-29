@@ -164,15 +164,19 @@ public class TransactionsPanel extends JPanel {
                 } else if (isSend) {
                     String otherUsername = JOptionPane.showInputDialog(this, "Enter username to send money to:");
                     String pin = JOptionPane.showInputDialog(this, "Enter your 4-digit PIN:");
-                
+
                     if (parentFrame.verifyPin(pin)) {
-                        accountType = isChecking ? "checking" : "savings";
-                        parentFrame.sendMoneyAsync(otherUsername, amount, isChecking, accountType);
+                        boolean success = parentFrame.sendMoneyToUser(otherUsername, amount, isChecking);
+                        if (success) {
+                            logTransaction("Sent $" + amount + " to " + otherUsername + " from " + accountType);
+                            JOptionPane.showMessageDialog(this, "Money sent successfully!");
+                        } else {
+                            JOptionPane.showMessageDialog(this, "Failed to send money. Maybe insufficient balance.");
+                        }
                     } else {
                         JOptionPane.showMessageDialog(this, "Wrong PIN. Transaction cancelled.");
                     }
-                }
-                 else if (isRequest) {
+                } else if (isRequest) {
                     String otherUsername = JOptionPane.showInputDialog(this, "Enter username to request money from:");
                     parentFrame.logRequestToUser(otherUsername, amount);
                     logTransaction("Requested $" + amount + " from " + otherUsername);
