@@ -14,13 +14,49 @@ public class BankWelcomePage extends JFrame {
     private String username;
     private JTabbedPane tabbedPane;
 
-    // ✅ Server IP (change this to your actual server IP if needed)
-    private static final String SERVER_IP = "10.1.40.19";
-    private static final int SERVER_PORT = 5000;
+    private static final String SERVER_IP = "10.1.40.19"; // <-- Set to your server machine IP
+private static final int SERVER_PORT = 5000;
 
-    private Socket liveSocket;
-    private BufferedReader liveIn;
-    private PrintWriter liveOut;
+private Socket liveSocket;
+private BufferedReader liveIn;
+private PrintWriter liveOut;
+
+public void startLiveConnection() {
+    try {
+        liveSocket = new Socket(SERVER_IP, SERVER_PORT);
+        liveOut = new PrintWriter(liveSocket.getOutputStream(), true);
+        liveIn = new BufferedReader(new InputStreamReader(liveSocket.getInputStream()));
+        liveOut.println("LOGIN:" + username);
+        new ClientReceiverThread(this, liveIn).start();
+    } catch (IOException e) {
+        JOptionPane.showMessageDialog(this, "Could not connect to server at " + SERVER_IP,
+            "Connection Error", JOptionPane.ERROR_MESSAGE);
+    }
+}
+
+public boolean sendMoneyToUser(String recipient, double amount, boolean fromChecking) {
+    if (fromChecking && checkingBalance < amount) return false;
+    if (!fromChecking && savingsBalance < amount) return false;
+
+    try {
+        String accountType = fromChecking ? "checking" : "savings";
+        liveOut.println("SEND:" + recipient + "," + amount + "," + accountType);
+
+        String response = liveIn.readLine();
+        if ("SUCCESS".equals(response)) {
+            if (fromChecking) checkingBalance -= amount;
+            else savingsBalance -= amount;
+            updateCredentialsFile();
+            return true;
+        } else {
+            JOptionPane.showMessageDialog(this, "Transfer failed: " + response);
+        }
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+    return false;
+}
+
 
     public BankWelcomePage(String username, double checkingBalance, double savingsBalance, double accountNumber) {
         this.username = username;
@@ -45,21 +81,6 @@ public class BankWelcomePage extends JFrame {
         add(tabbedPane);
     }
 
-    // ✅ Connect to server with IP
-    public void startLiveConnection() {
-        try {
-            liveSocket = new Socket(SERVER_IP, SERVER_PORT);
-            liveOut = new PrintWriter(liveSocket.getOutputStream(), true);
-            liveIn = new BufferedReader(new InputStreamReader(liveSocket.getInputStream()));
-
-            liveOut.println("LOGIN:" + username); // Identify this user
-            new ClientReceiverThread(this, liveIn).start(); // Start listening for messages
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Failed to connect to transaction server at " + SERVER_IP,
-                    "Connection Error", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
-        }
-    }
 
     public boolean verifyPin(String pin) {
         try (Scanner scanner = new Scanner(new File("credentials.txt"))) {
@@ -75,41 +96,7 @@ public class BankWelcomePage extends JFrame {
         return false;
     }
 
-    // ✅ Send money via server IP, not localhost
-    public boolean sendMoneyToUser(String recipientUsername, double amount, boolean fromChecking) {
-        try (Socket socket = new Socket(SERVER_IP, SERVER_PORT);
-             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-
-            String accountType = fromChecking ? "checking" : "savings";
-            out.println(username + "," + recipientUsername + "," + amount + "," + accountType);
-
-            String response = in.readLine();
-            if ("SUCCESS".equals(response)) {
-                if (fromChecking) {
-                    if (checkingBalance >= amount) {
-                        checkingBalance -= amount;
-                        updateCredentialsFile();
-                        return true;
-                    }
-                } else {
-                    if (savingsBalance >= amount) {
-                        savingsBalance -= amount;
-                        updateCredentialsFile();
-                        return true;
-                    }
-                }
-            } else {
-                System.out.println("Server error: " + response);
-            }
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Could not reach server at " + SERVER_IP,
-                    "Transfer Error", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
-        }
-        return false;
-    }
-
+   
     public void logRequestToUser(String otherUsername, double amount) {
         try (FileWriter fw = new FileWriter("requests.txt", true)) {
             fw.write(username + " requested $" + amount + " from " + otherUsername + "\n");
