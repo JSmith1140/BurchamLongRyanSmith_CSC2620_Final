@@ -12,10 +12,10 @@ public class ClientReceiverThread extends Thread {
     @Override
     public void run() {
         try {
-            String input;
-            while ((input = in.readLine()) != null) {
-                if (input.startsWith("MONEY_RECEIVED:")) {
-                    String[] parts = input.substring(15).split(",");
+            String line;
+            while ((line = in.readLine()) != null) {
+                if (line.startsWith("MONEY_RECEIVED:")) {
+                    String[] parts = line.substring(15).split(",");
                     String sender = parts[0];
                     double amount = Double.parseDouble(parts[1]);
                     String accountType = parts[2];
@@ -23,7 +23,7 @@ public class ClientReceiverThread extends Thread {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Connection closed.");
         }
     }
 }
