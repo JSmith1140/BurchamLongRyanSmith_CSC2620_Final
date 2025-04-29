@@ -27,8 +27,6 @@ public class AccountTab extends JPanel {
 
         // Tabs
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("Balances", createBalancePanel());
-        tabbedPane.addTab("Transfer", createTransferPanel());
         tabbedPane.addTab("Transaction history", createTransactionPanel());
 
         add(tabbedPane, BorderLayout.CENTER);
@@ -50,106 +48,6 @@ public class AccountTab extends JPanel {
         bottomPanel.add(btnExit);
 
         add(bottomPanel, BorderLayout.SOUTH);
-    }
-
-    private JPanel createBalancePanel() {
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(new Color(240, 248, 255));
-
-        JLabel lblChecking = new JLabel("Checking: $" + String.format("%.2f", checkingBalance));
-        JLabel lblSavings = new JLabel("Savings: $" + String.format("%.2f", savingsBalance));
-
-        lblChecking.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        lblSavings.setFont(new Font("Segoe UI", Font.BOLD, 16));
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.anchor = GridBagConstraints.CENTER;
-        gbc.insets = new Insets(10, 10, 10, 10);
-
-        gbc.gridy = 0;
-        panel.add(lblChecking, gbc);
-
-        gbc.gridy = 1;
-        panel.add(lblSavings, gbc);
-
-        return panel;
-    }
-
-    private JPanel createTransferPanel() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBackground(new Color(240, 248, 255));
-
-        JRadioButton toChecking = new JRadioButton("To Checking");
-        JRadioButton toSavings = new JRadioButton("To Savings");
-        ButtonGroup group = new ButtonGroup();
-        group.add(toChecking);
-        group.add(toSavings);
-
-        JTextField txtAmount = new JTextField();
-        txtAmount.setMaximumSize(new Dimension(200, 25));
-
-        JButton btnTransfer = new JButton("Transfer");
-        btnTransfer.setBackground(new Color(30, 144, 255));
-        btnTransfer.setForeground(Color.WHITE);
-        btnTransfer.setFocusPainted(false);
-        btnTransfer.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnTransfer.setPreferredSize(new Dimension(150, 40));
-
-        btnTransfer.addActionListener(e -> {
-            try {
-                double amount = Double.parseDouble(txtAmount.getText());
-                if (toChecking.isSelected()) {
-                    if (savingsBalance >= amount) {
-                        savingsBalance -= amount;
-                        checkingBalance += amount;
-                        logTransaction("Transferred $" + amount + " to Checking");
-
-                        parentFrame.setCheckingBalance(checkingBalance);
-                        parentFrame.setSavingsBalance(savingsBalance);
-
-                        parentFrame.updateCredentialsFile();
-                        JOptionPane.showMessageDialog(this, "Successfully transferred to Checking.");
-                        SwingUtilities.getWindowAncestor(this).dispose();
-                        new BankWelcomePage(username, checkingBalance, savingsBalance, accountNumber).setVisible(true);
-                    } else {
-                        JOptionPane.showMessageDialog(this, "Insufficient Savings Balance.", "Transfer",
-                                JOptionPane.ERROR_MESSAGE);
-                    }
-                } else if (toSavings.isSelected()) {
-                    if (checkingBalance >= amount) {
-                        checkingBalance -= amount;
-                        savingsBalance += amount;
-                        logTransaction("Transferred $" + amount + " to Savings");
-
-                        parentFrame.setCheckingBalance(checkingBalance);
-                        parentFrame.setSavingsBalance(savingsBalance);
-
-                        parentFrame.updateCredentialsFile();
-                        JOptionPane.showMessageDialog(this, "Successfully transferred to Savings.");
-                        SwingUtilities.getWindowAncestor(this).dispose();
-                        new BankWelcomePage(username, checkingBalance, savingsBalance, accountNumber).setVisible(true);
-                    } else {
-                        JOptionPane.showMessageDialog(this, "Insufficient Checking Balance.", "Transfer",
-                                JOptionPane.ERROR_MESSAGE);
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(this, "Please select an account.", "Transfer",
-                            JOptionPane.ERROR_MESSAGE);
-                }
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Enter a valid amount.");
-            }
-        });
-
-        panel.add(new JLabel("Enter amount to transfer:"));
-        panel.add(txtAmount);
-        panel.add(toChecking);
-        panel.add(toSavings);
-        panel.add(btnTransfer);
-
-        return panel;
     }
 
     private JPanel createTransactionPanel() {
@@ -187,4 +85,3 @@ public class AccountTab extends JPanel {
         }
     }
 }
-//
