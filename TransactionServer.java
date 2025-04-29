@@ -6,8 +6,13 @@ public class TransactionServer {
     private static HashMap<String, PrintWriter> liveUsers = new HashMap<>();
 
     public static void main(String[] args) {
-        try (ServerSocket serverSocket = new ServerSocket(5000)) {
-            System.out.println("Transaction Server running on port 5000...");
+        try {
+            String serverIp = "10.1.40.19"; // Replace with your server's IP address
+            InetAddress serverAddress = InetAddress.getByName(serverIp);
+            ServerSocket serverSocket = new ServerSocket(5000, 0, serverAddress);
+            
+            System.out.println("Transaction Server running on IP: " + serverIp + " and port 5000...");
+            
             while (true) {
                 Socket clientSocket = serverSocket.accept();
                 new TransactionHandler(clientSocket).start();
