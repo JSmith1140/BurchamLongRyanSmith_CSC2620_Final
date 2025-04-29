@@ -1,4 +1,4 @@
-import javax.swing.*;
+import javax.swing.*;// import statements for everything well be using
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -12,9 +12,9 @@ public class AccountTab extends JPanel {
     private String username;
     private BankWelcomePage parentFrame;
 
-    private JTextArea txtTransactions;
+    private JTextArea txtTransactions;// area where transactions are displayed
 
-    public AccountTab(String username, double checking, double savings, double accountNumber,
+    public AccountTab(String username, double checking, double savings, double accountNumber, // constructor
                       BankWelcomePage parentFrame) {
         this.username = username;
         this.checkingBalance = checking;
@@ -27,14 +27,14 @@ public class AccountTab extends JPanel {
 
         // Tabs
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("Transaction history", createTransactionPanel());
+        tabbedPane.addTab("Transaction history", createTransactionPanel());// add transaction history tab
 
         add(tabbedPane, BorderLayout.CENTER);
 
         // Exit Button
-        JButton btnExit = new JButton("Exit to Home");
+        JButton btnExit = new JButton("Exit to Home");// when clicked closes gui and opens new bank welcome gui
         btnExit.setBackground(new Color(30, 144, 255)); // Blue background
-        btnExit.setForeground(Color.WHITE);              // White text
+        btnExit.setForeground(Color.WHITE); // White text
         btnExit.setFocusPainted(false);
         btnExit.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnExit.setPreferredSize(new Dimension(150, 40));
@@ -50,21 +50,21 @@ public class AccountTab extends JPanel {
         add(bottomPanel, BorderLayout.SOUTH);
     }
 
-    private JPanel createTransactionPanel() {
+    private JPanel createTransactionPanel() {// builds the panel for transaction history
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(new Color(240, 248, 255));
 
-        txtTransactions = new JTextArea(15, 30);
+        txtTransactions = new JTextArea(15, 30);// text area for transactions 
         txtTransactions.setEditable(false);
         txtTransactions.setBackground(new Color(240, 248, 255));
 
-        panel.add(new JScrollPane(txtTransactions), BorderLayout.CENTER);
+        panel.add(new JScrollPane(txtTransactions), BorderLayout.CENTER);//scrollable
 
         loadTransactions();
         return panel;
     }
 
-    private void logTransaction(String message) {
+    private void logTransaction(String message) {// saves a new transaction message into the transactions.txt file
         try (FileWriter writer = new FileWriter("transactions.txt", true)) {
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
             writer.write(timestamp + " - " + message + "\n");
@@ -73,7 +73,7 @@ public class AccountTab extends JPanel {
         }
     }
 
-    private void loadTransactions() {
+    private void loadTransactions() { // loads all previous transactions into the text area
         txtTransactions.setText("");
         try (BufferedReader reader = new BufferedReader(new FileReader("transactions.txt"))) {
             String line;
@@ -85,3 +85,4 @@ public class AccountTab extends JPanel {
         }
     }
 }
+// end of account class
