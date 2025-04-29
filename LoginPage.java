@@ -96,7 +96,9 @@ public class LoginPage extends JFrame {
                     JOptionPane.showMessageDialog(this, "Successfully Logged In", "Login",
                             JOptionPane.INFORMATION_MESSAGE);
                     dispose();
-                    new BankWelcomePage(username, checking, savings, accountNumber).setVisible(true);
+                    BankWelcomePage page = new BankWelcomePage(username, checking, savings, accountNumber);
+page.startLiveConnection();
+page.setVisible(true);
                     return;
                 }
             }
