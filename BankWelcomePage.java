@@ -1,4 +1,4 @@
-import java.net.Socket;
+import java.net.Socket; 
 import java.io.*;
 import javax.swing.*;
 import java.awt.*;
@@ -15,48 +15,69 @@ public class BankWelcomePage extends JFrame {
     private JTabbedPane tabbedPane;
 
     private static final String SERVER_IP = "10.1.40.19"; // <-- Set to your server machine IP
-private static final int SERVER_PORT = 5000;
+    private static final int SERVER_PORT = 5000;
 
-private Socket liveSocket;
-private BufferedReader liveIn;
-private PrintWriter liveOut;
+    private Socket liveSocket;
+    private BufferedReader liveIn;
+    private PrintWriter liveOut;
 
-public void startLiveConnection() {
-    try {
-        liveSocket = new Socket(SERVER_IP, SERVER_PORT);
-        liveOut = new PrintWriter(liveSocket.getOutputStream(), true);
-        liveIn = new BufferedReader(new InputStreamReader(liveSocket.getInputStream()));
-        liveOut.println("LOGIN:" + username);
-        new ClientReceiverThread(this, liveIn).start();
-    } catch (IOException e) {
-        JOptionPane.showMessageDialog(this, "Could not connect to server at " + SERVER_IP,
-            "Connection Error", JOptionPane.ERROR_MESSAGE);
-    }
-}
-
-public boolean sendMoneyToUser(String recipient, double amount, boolean fromChecking) {
-    if (fromChecking && checkingBalance < amount) return false;
-    if (!fromChecking && savingsBalance < amount) return false;
-
-    try {
-        String accountType = fromChecking ? "checking" : "savings";
-        liveOut.println("SEND:" + recipient + "," + amount + "," + accountType);
-
-        String response = liveIn.readLine();
-        if ("SUCCESS".equals(response)) {
-            if (fromChecking) checkingBalance -= amount;
-            else savingsBalance -= amount;
-            updateCredentialsFile();
-            return true;
-        } else {
-            JOptionPane.showMessageDialog(this, "Transfer failed: " + response);
+    public void startLiveConnection() {
+        try {
+            liveSocket = new Socket(SERVER_IP, SERVER_PORT);
+            liveOut = new PrintWriter(liveSocket.getOutputStream(), true);
+            liveIn = new BufferedReader(new InputStreamReader(liveSocket.getInputStream()));
+            liveOut.println("LOGIN:" + username);
+            new ClientReceiverThread(this, liveIn).start();
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Could not connect to server at " + SERVER_IP,
+                "Connection Error", JOptionPane.ERROR_MESSAGE);
         }
-    } catch (IOException e) {
-        e.printStackTrace();
     }
-    return false;
-}
 
+    public void sendMoneyAsync(String recipient, double amount, boolean fromChecking, String accountType) {
+        if (liveOut == null || liveIn == null) {
+            JOptionPane.showMessageDialog(this, "Live connection not established.");
+            return;
+        }
+
+        new Thread(() -> {
+            try {
+                if (fromChecking && checkingBalance < amount || !fromChecking && savingsBalance < amount) {
+                    SwingUtilities.invokeLater(() ->
+                            JOptionPane.showMessageDialog(this, "Insufficient funds."));
+                    return;
+                }
+
+                liveOut.println("SEND:" + recipient + "," + amount + "," + accountType);
+                String response = liveIn.readLine();
+
+                if ("SUCCESS".equalsIgnoreCase(response)) {
+                    if (fromChecking) checkingBalance -= amount;
+                    else savingsBalance -= amount;
+                    updateCredentialsFile();
+
+                    try (FileWriter writer = new FileWriter("transactions.txt", true)) {
+                        String msg = String.format("%s - Sent $%.2f to %s [%s account]%n",
+                                java.time.LocalDateTime.now(), amount, recipient, accountType);
+                        writer.write(msg);
+                    }
+
+                    SwingUtilities.invokeLater(() -> {
+                        JOptionPane.showMessageDialog(this, "Money sent successfully.");
+                        goToHomeTab();
+                    });
+                } else {
+                    SwingUtilities.invokeLater(() ->
+                            JOptionPane.showMessageDialog(this, "Failed: " + response));
+                }
+
+            } catch (IOException e) {
+                SwingUtilities.invokeLater(() ->
+                        JOptionPane.showMessageDialog(this, "Connection error."));
+                e.printStackTrace();
+            }
+        }).start();
+    }
 
     public BankWelcomePage(String username, double checkingBalance, double savingsBalance, double accountNumber) {
         this.username = username;
@@ -74,13 +95,12 @@ public boolean sendMoneyToUser(String recipient, double amount, boolean fromChec
 
     private void initUI() {
         tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("🏠 Home", createHomeTab());
-        tabbedPane.addTab("👛 Transactions", new TransactionsPanel(this));
-        tabbedPane.addTab("👤 Accounts",
+        tabbedPane.addTab("\uD83C\uDFE0 Home", createHomeTab());
+        tabbedPane.addTab("\uD83D\uDCB3 Transactions", new TransactionsPanel(this));
+        tabbedPane.addTab("\uD83D\uDC64 Accounts",
                 new AccountTab(username, checkingBalance, savingsBalance, accountNumber, this));
         add(tabbedPane);
     }
-
 
     public boolean verifyPin(String pin) {
         try (Scanner scanner = new Scanner(new File("credentials.txt"))) {
@@ -96,7 +116,6 @@ public boolean sendMoneyToUser(String recipient, double amount, boolean fromChec
         return false;
     }
 
-   
     public void logRequestToUser(String otherUsername, double amount) {
         try (FileWriter fw = new FileWriter("requests.txt", true)) {
             fw.write(username + " requested $" + amount + " from " + otherUsername + "\n");
@@ -112,9 +131,19 @@ public boolean sendMoneyToUser(String recipient, double amount, boolean fromChec
             savingsBalance += amount;
         }
         updateCredentialsFile();
+        logTransaction("Received $" + amount + " from " + sender + " into " + accountType);
         JOptionPane.showMessageDialog(this,
                 "You received $" + amount + " from " + sender + " into your " + accountType + " account!");
         goToHomeTab();
+    }
+
+    private void logTransaction(String message) {
+        try (FileWriter writer = new FileWriter("transactions.txt", true)) {
+            String timestamp = java.time.LocalDateTime.now().toString();
+            writer.write(timestamp + " - " + message + "\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private JPanel createHomeTab() {
@@ -252,6 +281,5 @@ public boolean sendMoneyToUser(String recipient, double amount, boolean fromChec
 
     public static void main(String[] args) {
         // For testing
-        // new BankWelcomePage("user1", 1000.0, 2000.0, 1234567890).startLiveConnection();
     }
 }
