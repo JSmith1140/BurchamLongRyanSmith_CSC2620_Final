@@ -176,12 +176,20 @@ public class TransactionsPanel extends JPanel {
                     } else {
                         JOptionPane.showMessageDialog(this, "Wrong PIN. Transaction cancelled.");
                     }
-                } else if (isRequest) {
+                } 
+                else if (isRequest) {
                     String otherUsername = JOptionPane.showInputDialog(this, "Enter username to request money from:");
-                    parentFrame.logRequestToUser(otherUsername, amount);
-                    logTransaction("Requested $" + amount + " from " + otherUsername);
-                    JOptionPane.showMessageDialog(this, "Money request sent!");
+                    if (otherUsername == null || otherUsername.isBlank()) return;
+                
+                    boolean success = parentFrame.sendRequestToUser(otherUsername, amount, isChecking);
+                    if (success) {
+                        logTransaction("Requested $" + amount + " from " + otherUsername);
+                        JOptionPane.showMessageDialog(this, "Money request sent!");
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Request failed or user is not online.");
+                    }
                 }
+                
 
                 parentFrame.goToHomeTab();
 
