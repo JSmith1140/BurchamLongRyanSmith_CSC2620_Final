@@ -38,14 +38,20 @@ public void run() {
             requester + " is requesting $" + amount + " from your " + accountType + " account.\nApprove?",
             "Money Request", JOptionPane.YES_NO_OPTION);
 
-        if (result == JOptionPane.YES_OPTION) {
-            boolean success = parent.sendMoneyToUser(requester, amount, fromChecking);
-            if (success) {
-                JOptionPane.showMessageDialog(null, "You sent $" + amount + " to " + requester);
+            if (result == JOptionPane.YES_OPTION) {
+                String pin = JOptionPane.showInputDialog(null, "Enter your 4-digit PIN to approve the request:");
+            
+                if (pin != null && parent.verifyPin(pin)) {
+                    boolean success = parent.sendMoneyToUser(requester, amount, true); // Always pay from checking
+                    if (success) {
+                        JOptionPane.showMessageDialog(null, "You sent $" + amount + " to " + requester);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Transaction failed: Insufficient funds or connection issue.");
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "Incorrect PIN. Transaction cancelled.");
+                }
             } else {
-                JOptionPane.showMessageDialog(null, "Transaction failed: Insufficient funds or connection issue.");
-            }
-        } else {
             JOptionPane.showMessageDialog(null, "You declined the money request from " + requester + ".");
         }
     }).start(); 
