@@ -1,5 +1,7 @@
 import java.io.BufferedReader;
 
+import javax.swing.JOptionPane;
+
 public class ClientReceiverThread extends Thread {
     private BankWelcomePage parent;
     private BufferedReader in;
@@ -21,8 +23,34 @@ public void run() {
                 String accountType = parts[2];
                 parent.receiveLiveMoney(sender, amount, accountType);
             } else if (line.equals("SUCCESS") || line.startsWith("ERROR")) {
-                parent.enqueueServerResponse(line);
+                parent.enqueueServerResponse(line);  // ✅ Put response in queue
             }
+
+            else if (line.startsWith("MONEY_REQUESTED:")) {
+    String[] parts = line.substring(16).split(",");
+    String requester = parts[0];
+    double amount = Double.parseDouble(parts[1]);
+    String accountType = parts[2];
+    boolean fromChecking = accountType.equalsIgnoreCase("checking");
+
+    new Thread(() -> {
+        int result = JOptionPane.showConfirmDialog(null,
+            requester + " is requesting $" + amount + " from your " + accountType + " account.\nApprove?",
+            "Money Request", JOptionPane.YES_NO_OPTION);
+
+        if (result == JOptionPane.YES_OPTION) {
+            boolean success = parent.sendMoneyToUser(requester, amount, fromChecking);
+            if (success) {
+                JOptionPane.showMessageDialog(null, "You sent $" + amount + " to " + requester);
+            } else {
+                JOptionPane.showMessageDialog(null, "Transaction failed: Insufficient funds or connection issue.");
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "You declined the money request from " + requester + ".");
+        }
+    }).start(); 
+}
+
         }
     } catch (Exception e) {
         System.out.println("Connection closed.");
