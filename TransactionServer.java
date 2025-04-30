@@ -81,7 +81,7 @@ public class TransactionServer {
                     
                             PrintWriter toUserOut = liveUsers.get(toUser);
                             if (toUserOut != null) {
-                                // Format: MONEY_REQUESTED:<requester>,<amount>,<accountType>
+                                
                                 toUserOut.println("MONEY_REQUESTED:" + username + "," + amount + "," + accountType);
                                 out.println("SUCCESS");
                             } else {
