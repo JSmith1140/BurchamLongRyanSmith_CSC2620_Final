@@ -4,6 +4,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Objects;
 import java.util.Scanner;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+
 
 public class BankWelcomePage extends JFrame {
     private double checkingBalance;
@@ -14,9 +17,9 @@ public class BankWelcomePage extends JFrame {
     private String username;
     private JTabbedPane tabbedPane;
 
-    private static final String SERVER_IP = "10.1.40.19"; // <-- Set to your server machine IP
+    private static final String SERVER_IP = "10.2.75.63"; // <-- Set to your server machine IP
 private static final int SERVER_PORT = 5000;
-
+private final BlockingQueue<String> responseQueue = new ArrayBlockingQueue<>(1);
 private Socket liveSocket;
 private BufferedReader liveIn;
 private PrintWriter liveOut;
@@ -33,6 +36,10 @@ public void startLiveConnection() {
             "Connection Error", JOptionPane.ERROR_MESSAGE);
     }
 }
+public void enqueueServerResponse(String response) {
+    responseQueue.offer(response);  // won't block
+}
+
 
 public boolean sendMoneyToUser(String recipient, double amount, boolean fromChecking) {
     if (fromChecking && checkingBalance < amount) return false;
@@ -40,10 +47,19 @@ public boolean sendMoneyToUser(String recipient, double amount, boolean fromChec
 
     try {
         String accountType = fromChecking ? "checking" : "savings";
+        responseQueue.clear(); // clear any previous responses
+
         liveOut.println("SEND:" + recipient + "," + amount + "," + accountType);
 
-        String response = liveIn.readLine();
-        if ("SUCCESS".equals(response)) {
+        // Wait (max 5 seconds) for response from ClientReceiverThread
+        String response = responseQueue.poll(5, java.util.concurrent.TimeUnit.SECONDS);
+
+        if (response == null) {
+            JOptionPane.showMessageDialog(this, "No response from server. Try again.");
+            return false;
+        }
+
+        if (response.equals("SUCCESS")) {
             if (fromChecking) checkingBalance -= amount;
             else savingsBalance -= amount;
             updateCredentialsFile();
@@ -51,7 +67,8 @@ public boolean sendMoneyToUser(String recipient, double amount, boolean fromChec
         } else {
             JOptionPane.showMessageDialog(this, "Transfer failed: " + response);
         }
-    } catch (IOException e) {
+
+    } catch (Exception e) {
         e.printStackTrace();
     }
     return false;
@@ -115,6 +132,8 @@ public boolean sendMoneyToUser(String recipient, double amount, boolean fromChec
         JOptionPane.showMessageDialog(this,
                 "You received $" + amount + " from " + sender + " into your " + accountType + " account!");
         goToHomeTab();
+          
+        
     }
 
     private JPanel createHomeTab() {
