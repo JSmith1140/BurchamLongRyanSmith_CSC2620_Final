@@ -28,6 +28,7 @@ rectangle "Transactions Tab" {
   usecase "Deposit Money" as UC12
   usecase "Send Money" as UC13
   usecase "Request Money" as UC14
+  usecase "Transfer" as UC15
 }
 
 ' Account Tab
