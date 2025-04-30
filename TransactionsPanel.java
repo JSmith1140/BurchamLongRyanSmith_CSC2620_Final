@@ -41,7 +41,7 @@ public class TransactionsPanel extends JPanel {
         JRadioButton withdrawButton = new JRadioButton("Withdraw");
         JRadioButton sendButton = new JRadioButton("Send Money");   // <-- ADDED
         JRadioButton requestButton = new JRadioButton("Request Money"); // <-- ADDED
-        JRadioButton transferButton = new JRadioButton("Transfer"); // ✅ New option
+        JRadioButton transferButton = new JRadioButton("Transfer");
 transferButton.setBackground(radioBg);
         depositButton.setBackground(radioBg);
         withdrawButton.setBackground(radioBg);
@@ -128,8 +128,8 @@ transferButton.setBackground(radioBg);
 
                 boolean isDeposit = depositButton.isSelected();
                 boolean isWithdraw = withdrawButton.isSelected();
-                boolean isSend = sendButton.isSelected();      // <-- Added
-                boolean isRequest = requestButton.isSelected();// <-- Added
+                boolean isSend = sendButton.isSelected();
+                boolean isRequest = requestButton.isSelected();
                 boolean isChecking = checkingButton.isSelected();
                 boolean isSavings = savingsButton.isSelected();
                 boolean isTransfer = transferButton.isSelected();
