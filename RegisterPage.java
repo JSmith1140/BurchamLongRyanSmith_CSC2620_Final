@@ -20,7 +20,7 @@ public class RegisterPage extends Frame {
 //Constructor for RegisterPage
     public RegisterPage() {
 //Window title
-        setTitle("Login Page");
+        setTitle("Register Page");
 //Main panel with vertical layout and navy blue backround
         JPanel panel = new JPanel();
         panel.setBackground(new Color(0, 0, 128));
