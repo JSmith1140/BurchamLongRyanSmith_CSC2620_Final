@@ -23,7 +23,7 @@ public void run() {
                 String accountType = parts[2];
                 parent.receiveLiveMoney(sender, amount, accountType);
             } else if (line.equals("SUCCESS") || line.startsWith("ERROR")) {
-                parent.enqueueServerResponse(line);  // ✅ Put response in queue
+                parent.enqueueServerResponse(line);
             }
 
             else if (line.startsWith("MONEY_REQUESTED:")) {
