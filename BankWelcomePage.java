@@ -1,3 +1,4 @@
+//Imports
 import java.net.Socket;
 import java.io.*;
 import javax.swing.*;
@@ -8,8 +9,9 @@ import java.util.Objects;
 import java.util.Scanner;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-
+//Main class
 public class BankWelcomePage extends JFrame {
+//Account and user info
     private double checkingBalance;
     private double savingsBalance;
     private double checkingChange = 0;
@@ -18,32 +20,30 @@ public class BankWelcomePage extends JFrame {
     private double prevSavingsBalance = 0;
     private double accountNumber;
     private String username;
+    //GUI for swithcing tabs
     private JTabbedPane tabbedPane;
-
-    private static final String SERVER_IP = "10.2.147.237"; // <-- Set to your server machine IP
+//Server connection
+    private static final String SERVER_IP = "10.2.147.237"; // <-- Put your IP here :)
     private static final int SERVER_PORT = 5000;
     private final BlockingQueue<String> responseQueue = new ArrayBlockingQueue<>(1);
     private Socket liveSocket;
     private BufferedReader liveIn;
     private PrintWriter liveOut;
 
-    // OBSERVER Pattern
+//Observer pattern to update balance view
     public interface BalanceObserver {
         void onBalanceChanged();
     }
-
     private final List<BalanceObserver> observers = new ArrayList<>();
-
     public void addObserver(BalanceObserver observer) {
         observers.add(observer);
     }
-
     public void notifyObservers() {
         for (BalanceObserver observer : observers) {
             observer.onBalanceChanged();
         }
     }
-
+//Starts a socket connection to server 
     public void startLiveConnection() {
         try {
             liveSocket = new Socket(SERVER_IP, SERVER_PORT);
@@ -56,12 +56,13 @@ public class BankWelcomePage extends JFrame {
                     "Connection Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-
+//Response recieved from server processed by sender method
     public void enqueueServerResponse(String response) {
         responseQueue.offer(response); // won't block
     }
-
+//Sends money to another user using server
     public boolean sendMoneyToUser(String recipient, double amount, boolean fromChecking) {
+//Ensure enough balance exists before sending 
         if (fromChecking && checkingBalance < amount)
             return false;
         if (!fromChecking && savingsBalance < amount)
@@ -69,26 +70,27 @@ public class BankWelcomePage extends JFrame {
 
         try {
             String accountType = fromChecking ? "checking" : "savings";
-            responseQueue.clear(); // clear any previous responses
+//Clear old responses
+            responseQueue.clear(); 
+//Send from checking
+            liveOut.println("SEND:" + recipient + "," + amount + "," + "checking"); 
+                                                                                
 
-            liveOut.println("SEND:" + recipient + "," + amount + "," + "checking"); // Force recipient's account to
-                                                                                    // checking
-
-            // Wait (max 5 seconds) for response from ClientReceiverThread
+//Wait max of 5 seconds for confirmation or error
             String response = responseQueue.poll(5, java.util.concurrent.TimeUnit.SECONDS);
-
             if (response == null) {
                 JOptionPane.showMessageDialog(this, "No response from server. Try again.");
                 return false;
             }
 
             if (response.equals("SUCCESS")) {
+//Update balance locally
                 if (fromChecking) {
                     checkingBalance -= amount;
-                    checkingChange -= amount; // ✅
+                    checkingChange -= amount;
                 } else {
                     savingsBalance -= amount;
-                    savingsChange -= amount; // ✅
+                    savingsChange -= amount;
                 }
 
                 updateCredentialsFile();
@@ -105,7 +107,7 @@ public class BankWelcomePage extends JFrame {
         }
         return false;
     }
-
+//Requests money from another user
     public boolean sendRequestToUser(String recipient, double amount, boolean toChecking) {
         try {
             String accountType = toChecking ? "checking" : "savings";
@@ -124,7 +126,7 @@ public class BankWelcomePage extends JFrame {
         }
         return false;
     }
-
+//constuctor 
     public BankWelcomePage(String username, double checkingBalance, double savingsBalance, double accountNumber) {
         this.username = username;
         this.checkingBalance = checkingBalance;
@@ -135,12 +137,12 @@ public class BankWelcomePage extends JFrame {
         setSize(700, 500);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-
+//Create UI tabs
         initUI();
-
+//Register for balance updates
         addObserver(this::goToHomeTab);
     }
-
+//Creates all tabs for the GUI
     private void initUI() {
         tabbedPane = new JTabbedPane();
         tabbedPane.addTab("🏠 Home", createHomeTab());
@@ -149,7 +151,7 @@ public class BankWelcomePage extends JFrame {
                 new AccountTab(username, checkingBalance, savingsBalance, accountNumber, this));
         add(tabbedPane);
     }
-
+//verifies PIN from credentials file
     public boolean verifyPin(String pin) {
         try (Scanner scanner = new Scanner(new File("credentials.txt"))) {
             while (scanner.hasNextLine()) {
@@ -163,7 +165,7 @@ public class BankWelcomePage extends JFrame {
         }
         return false;
     }
-
+//Logs a request to local requests file
     public void logRequestToUser(String otherUsername, double amount) {
         try (FileWriter fw = new FileWriter("requests.txt", true)) {
             fw.write(username + " requested $" + amount + " from " + otherUsername + "\n");
@@ -171,14 +173,14 @@ public class BankWelcomePage extends JFrame {
             e.printStackTrace();
         }
     }
-
+//Handles incoming transfer of money from server
     public void receiveLiveMoney(String sender, double amount, String accountType) {
         if (accountType.equalsIgnoreCase("checking")) {
             checkingBalance += amount;
-            checkingChange += amount; // ✅ reflect change
+            checkingChange += amount;
         } else {
             savingsBalance += amount;
-            savingsChange += amount; // ✅ reflect change
+            savingsChange += amount;
         }
 
         updateCredentialsFile();
@@ -186,23 +188,23 @@ public class BankWelcomePage extends JFrame {
                 "You received $" + amount + " from " + sender + " into your " + accountType + " account!");
         notifyObservers();
     }
-
+//UI construcotr for home tab
     private JPanel createHomeTab() {
         double totalBalance = checkingBalance + savingsBalance;
 
         JPanel panel = new JPanel(new BorderLayout(10, 10));
-        panel.setBackground(new Color(240, 248, 255)); // Updated background color
+        panel.setBackground(new Color(240, 248, 255));
 
-        // Top Panel (Welcome + Account)
+//Top Panel welcome message
         JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBackground(new Color(240, 248, 255)); // Updated background color
+        topPanel.setBackground(new Color(240, 248, 255));
         topPanel.setBorder(BorderFactory.createEmptyBorder(15, 20, 0, 20));
 
         JPanel infoPanel = new JPanel();
         infoPanel.setBackground(new Color(240, 248, 255));
         infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.X_AXIS));
 
-        // === Load and add the image ===
+//Load and add the image
         ImageIcon originalIcon = null;
         try {
             originalIcon = new ImageIcon(getClass().getResource("JAWABankImage.jpg")); // <-- Download the JPG Image in
@@ -220,11 +222,10 @@ public class BankWelcomePage extends JFrame {
             infoPanel.add(imageLabel);
         }
 
-        // === Welcome Text ===
+//Welcome Text
         JPanel welcomeTextPanel = new JPanel();
         welcomeTextPanel.setLayout(new BoxLayout(welcomeTextPanel, BoxLayout.Y_AXIS));
         welcomeTextPanel.setBackground(new Color(240, 248, 255));
-
         JLabel welcomeLabel = new JLabel("Welcome to JAWA, " + username + "!");
         welcomeLabel.setFont(new Font("Arial", Font.BOLD, 16));
 
@@ -237,12 +238,12 @@ public class BankWelcomePage extends JFrame {
 
         infoPanel.add(welcomeTextPanel);
 
-        // Add the infoPanel to the WEST of topPanel
+//Add the infoPanel to the west of topPanel
         topPanel.add(infoPanel, BorderLayout.WEST);
 
-        // Center Panel
+//Center Panel total balance and accounut boxes
         JPanel centerPanel = new JPanel();
-        centerPanel.setBackground(new Color(240, 248, 255)); // Updated background color
+        centerPanel.setBackground(new Color(240, 248, 255));
         centerPanel.setLayout(new BorderLayout());
 
         JLabel totalLabel = new JLabel("Total Balance: $" + String.format("%.2f", totalBalance), SwingConstants.CENTER);
@@ -267,7 +268,7 @@ public class BankWelcomePage extends JFrame {
 
         return panel;
     }
-
+//Creates a box to show account balance and changes
     private JPanel createAccountBox(String title) {
         double balance = title.contains("Checking") ? checkingBalance : savingsBalance;
         double change = title.contains("Checking") ? checkingChange : savingsChange;
@@ -300,12 +301,12 @@ public class BankWelcomePage extends JFrame {
         panel.add(changeLabel);
         return panel;
     }
-
+//Methods for modifying account balances
     public boolean updateCheckingBalance(double amount) {
         if (checkingBalance + amount < 0)
             return false;
         checkingBalance += amount;
-        checkingChange += amount; // ✅ Add delta
+        checkingChange += amount;
         return true;
     }
 
@@ -313,10 +314,10 @@ public class BankWelcomePage extends JFrame {
         if (savingsBalance + amount < 0)
             return false;
         savingsBalance += amount;
-        savingsChange += amount; // ✅ Add delta
+        savingsChange += amount;
         return true;
     }
-
+//Reloads the home tab
     public void goToHomeTab() {
         tabbedPane.setSelectedIndex(0);
         getContentPane().removeAll();
@@ -324,7 +325,7 @@ public class BankWelcomePage extends JFrame {
         revalidate();
         repaint();
     }
-
+//Updates stored credentials
     public void updateCredentialsFile() {
         try {
             File file = new File("credentials.txt");
@@ -351,7 +352,7 @@ public class BankWelcomePage extends JFrame {
                     "File Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-
+//Setters for external use
     public void setCheckingBalance(double checkingBalance) {
         this.checkingBalance = checkingBalance;
     }
@@ -359,10 +360,7 @@ public class BankWelcomePage extends JFrame {
     public void setSavingsBalance(double savingsBalance) {
         this.savingsBalance = savingsBalance;
     }
-
+//Main method (for testing)
     public static void main(String[] args) {
-        // For testing
-        // new BankWelcomePage("user1", 1000.0, 2000.0,
-        // 1234567890).startLiveConnection();
     }
 }
