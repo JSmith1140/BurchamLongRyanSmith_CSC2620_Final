@@ -37,13 +37,32 @@ class RegisterPage {
 class BankWelcomePage {
     - checkingBalance : double
     - savingsBalance : double
+    - checkingChange : double
+    - savingsChange : double
     - prevCheckingBalance : double
     - prevSavingsBalance : double
     - accountNumber : double
     - username : String
     - tabbedPane : JTabbedPane
+    - SERVER_IP : String
+    - SERVER_PORT : int
+    - BLOCKINGQUEUE<String> responseQueue
+    - liveSocket : Socket
+    - liveIn : BufferedReader
+    - liveOut : PrintWriter
+    + BalanceObserver() : interface
+    - List<BalanceObserver> observers
+    + addObserver(observer) : void
+    + notifyObservers() : void
+    + startLiveConnection() : void
+    + enqueueServerResponse(response) : void
+    + sendMoneyToUser(recipient, amount, fromChecking) : boolean
+    + sendRequestToUser(recipient, amount, toChecking) : boolean
     + BankWelcomePage(username: String, checkingBalance: double, savingsBalance: double, accountNumber: double)
     - initUI() : void
+    + verfiyPin(pin) : boolean
+    + logRequestToUser(otherUsername, amount) : void
+    + recieveLiveMoney(sender, amount, accountType) : void
     - createHomeTab() : JPanel
     - createAccountBox(title : String, balance : double, change : double) : JPanel
     + updateCheckingBalance(amount : double) : boolean
@@ -69,11 +88,32 @@ class AccountTab {
     - parentFrame : BankWelcomePage
     - txtTransactions : JTextArea
     + AccountTab(String username, double checking, double savings, double accountNumber, BankWelcomePage parentFrame)
-    - JPanel createBalancePanel()
-    - JPanel createTransferPanel()
-    - JPanel createTransactionPanel()
-    - void logTransaction(String message)
-    - void loadTransactions()
+    - createTransactionPanel() : JPanel
+    - logTransaction(String message) : void
+    - loadTransactions() : void
+}
+
+' TransactionServer class
+class TransactionServer {
+    - HashMap<String, PrintWriter> liveUsers
+}
+
+' Transaction Handler class
+class TransactionHandler {
+    - socket : Socket
+    - in : BufferedReader
+    - out : PrintWriter
+    - username : String
+    + TransactionHandler(Socket)
+    + run(): void
+}
+
+' ClientRecieverThread class
+class ClientReceiverThread {
+    - parent : BankWelcomePage
+    - in : BufferReader
+    + ClientReceiverThread(BankWelcomePage, BufferedReader)
+    + run(): void
 }
 
 ' Relations
@@ -82,4 +122,7 @@ LoginPage --> BankWelcomePage : opens when user successfully logs in
 RegisterPage --> LoginPage : opens after registration
 TransactionsPanel --> BankWelcomePage : uses BankWelcomePage
 AccountTab --> BankWelcomePage : uses BankWelcomePage
+TransactionServer -> TransactionHandler : creates
+TransactionServer --> BankWelcomePage : requires
+ClientReceiverThread -> BankWelcomePage : uses
 @enduml
