@@ -10,20 +10,23 @@ public class ClientReceiverThread extends Thread {
     }
 
     @Override
-    public void run() {
-        try {
-            String line;
-            while ((line = in.readLine()) != null) {
-                if (line.startsWith("MONEY_RECEIVED:")) {
-                    String[] parts = line.substring(15).split(",");
-                    String sender = parts[0];
-                    double amount = Double.parseDouble(parts[1]);
-                    String accountType = parts[2];
-                    parent.receiveLiveMoney(sender, amount, accountType);
-                }
+public void run() {
+    try {
+        String line;
+        while ((line = in.readLine()) != null) {
+            if (line.startsWith("MONEY_RECEIVED:")) {
+                String[] parts = line.substring(15).split(",");
+                String sender = parts[0];
+                double amount = Double.parseDouble(parts[1]);
+                String accountType = parts[2];
+                parent.receiveLiveMoney(sender, amount, accountType);
+            } else if (line.equals("SUCCESS") || line.startsWith("ERROR")) {
+                parent.enqueueServerResponse(line);
             }
-        } catch (Exception e) {
-            System.out.println("Connection closed.");
         }
+    } catch (Exception e) {
+        System.out.println("Connection closed.");
     }
+}
+
 }
