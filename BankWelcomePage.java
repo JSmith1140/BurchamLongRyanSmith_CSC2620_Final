@@ -62,7 +62,9 @@ public boolean sendMoneyToUser(String recipient, double amount, boolean fromChec
         if (response.equals("SUCCESS")) {
             if (fromChecking) checkingBalance -= amount;
             else savingsBalance -= amount;
+
             updateCredentialsFile();
+            goToHomeTab();  // ✅ <--- Refresh home UI immediately
             return true;
         } else {
             JOptionPane.showMessageDialog(this, "Transfer failed: " + response);
@@ -74,6 +76,24 @@ public boolean sendMoneyToUser(String recipient, double amount, boolean fromChec
     return false;
 }
 
+
+public boolean sendRequestToUser(String recipient, double amount, boolean toChecking) {
+    try {
+        String accountType = toChecking ? "checking" : "savings";
+        responseQueue.clear();
+        liveOut.println("REQUEST:" + recipient + "," + amount + "," + accountType);
+
+        String response = responseQueue.poll(5, java.util.concurrent.TimeUnit.SECONDS);
+        if ("SUCCESS".equals(response)) {
+            return true;
+        } else {
+            JOptionPane.showMessageDialog(this, "Request failed: " + response);
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return false;
+}
 
     public BankWelcomePage(String username, double checkingBalance, double savingsBalance, double accountNumber) {
         this.username = username;
