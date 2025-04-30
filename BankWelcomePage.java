@@ -64,10 +64,10 @@
             if (response.equals("SUCCESS")) {
                 if (fromChecking) {
                     checkingBalance -= amount;
-                    checkingChange -= amount;  // ✅
+                    checkingChange -= amount;
                 } else {
                     savingsBalance -= amount;
-                    savingsChange -= amount;  // ✅
+                    savingsChange -= amount;
                 }
             
                 updateCredentialsFile();
@@ -120,9 +120,9 @@
 
         private void initUI() {
             tabbedPane = new JTabbedPane();
-            tabbedPane.addTab("🏠 Home", createHomeTab());
-            tabbedPane.addTab("👛 Transactions", new TransactionsPanel(this));
-            tabbedPane.addTab("👤 Accounts",
+            tabbedPane.addTab("Home", createHomeTab());
+            tabbedPane.addTab("Transactions", new TransactionsPanel(this));
+            tabbedPane.addTab("Accounts",
                     new AccountTab(username, checkingBalance, savingsBalance, accountNumber, this));
             add(tabbedPane);
         }
@@ -154,10 +154,10 @@
         public void receiveLiveMoney(String sender, double amount, String accountType) {
             if (accountType.equalsIgnoreCase("checking")) {
                 checkingBalance += amount;
-                checkingChange += amount; // ✅ reflect change
+                checkingChange += amount;
             } else {
                 savingsBalance += amount;
-                savingsChange += amount; // ✅ reflect change
+                savingsChange += amount;
             }
         
             updateCredentialsFile();
@@ -284,14 +284,14 @@
         public boolean updateCheckingBalance(double amount) {
             if (checkingBalance + amount < 0) return false;
             checkingBalance += amount;
-            checkingChange += amount;  // ✅ Add delta
+            checkingChange += amount;
             return true;
         }
         
         public boolean updateSavingsBalance(double amount) {
             if (savingsBalance + amount < 0) return false;
             savingsBalance += amount;
-            savingsChange += amount;  // ✅ Add delta
+            savingsChange += amount;
             return true;
         }
         
