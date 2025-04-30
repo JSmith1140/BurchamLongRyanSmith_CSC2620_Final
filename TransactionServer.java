@@ -67,6 +67,30 @@ public class TransactionServer {
                             out.println("ERROR: " + ex.getMessage());
                         }
                     }
+                    else if (line.startsWith("REQUEST:")) {
+                        try {
+                            String[] parts = line.substring(8).split(",");
+                            if (parts.length < 3) {
+                                out.println("ERROR: Invalid REQUEST format");
+                                continue;
+                            }
+                    
+                            String toUser = parts[0];
+                            double amount = Double.parseDouble(parts[1]);
+                            String accountType = parts[2];
+                    
+                            PrintWriter toUserOut = liveUsers.get(toUser);
+                            if (toUserOut != null) {
+                                // Format: MONEY_REQUESTED:<requester>,<amount>,<accountType>
+                                toUserOut.println("MONEY_REQUESTED:" + username + "," + amount + "," + accountType);
+                                out.println("SUCCESS");
+                            } else {
+                                out.println("ERROR: User not online");
+                            }
+                        } catch (Exception ex) {
+                            out.println("ERROR: " + ex.getMessage());
+                        }
+                    }
                     
                 }
 
