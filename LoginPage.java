@@ -62,24 +62,29 @@ public class LoginPage extends JFrame {
 
         add(panel);
 
+        // Register button calls register function
         btnRegister.addActionListener(e -> {
             register();
         });
 
+        // Login button calls login function
         btnLogin.addActionListener(e -> {
             login();
         });
 
+        // Canvas size
         setSize(400, 300);
         setLocationRelativeTo(null);
         setVisible(true);
     }
 
+    // Register function that opens RegisterPage.java
     private void register() {
         dispose();
         new RegisterPage();
     }
 
+    // Login function that scans username and password and looks for a match in text file
     private void login() {
         String username = tfUser.getText();
         String password = new String(pfPass.getPassword());
