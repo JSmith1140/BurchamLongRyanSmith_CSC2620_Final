@@ -34,6 +34,12 @@ end
     ' Show welcome screen after user logs in
     Login -> Home : Show Welcome screen
 
+== View Balances ==
+    User -> Home : View balances
+    Home -> System : Fetch checkings/savings
+    System -> Home : Return balances
+    Home -> User : Show balances
+
 == Deposit ==
     User -> Transaction : Select Deposit
     Transaction -> User : Select account and enter amount
@@ -99,12 +105,6 @@ else Checkings Withdraw Error
 end
 end
 
-== View Balances ==
-    User -> Account : View balances
-    Account -> System : Fetch checkings/savings
-    System -> Account : Return balances
-    Account -> User : Show balances
-
 == Send/Request Money ==
     User -> Transaction : Select Send/Request
     Transaction -> User : Enter user, account type, amount
@@ -116,27 +116,6 @@ end
     TextFile --> System : Confirm
     System -> Transaction : Success
     Transaction -> Home : Back to home
-
-== Transfer Between Accounts ==
-    User -> Account : Select Transfer
-    Account -> User : Enter Amount
-    User -> Account : User enters amount
-    Account -> User : Select Account to get transfer
-    User -> Account : Selects account and presses transfer
-    Account -> System : Process Transfer
-' If transfer is successful
-alt Successful Transfer 
-    System -> Account : Transfer accepted
-    Account -> User : Successfully transfered to account
-     System -> TextFile : Update Text File
-    TextFile --> System : Confirm
-    System -> Account : Success
-    Account -> Home : Back to home
-' If transfer is unsuccessful
-else Unsuccessful Transfer
-    System -> Account : ERROR insufficient balance in other account
-    Account -> User : ERROR: Insufficent account balance
-end
 
 == Show Previous Transactions ==
 User -> Account : View previous transactions
