@@ -117,6 +117,27 @@ end
     System -> Transaction : Success
     Transaction -> Home : Back to home
 
+== Transfer Between Accounts ==
+    User -> Account : Select Transfer
+    Account -> User : Enter Amount
+    User -> Account : User enters amount
+    Account -> User : Select Account to get transfer
+    User -> Account : Selects account and presses transfer
+    Account -> System : Process Transfer
+' If transfer is successful
+alt Successful Transfer 
+    System -> Account : Transfer accepted
+    Account -> User : Successfully transfered to account
+     System -> TextFile : Update Text File
+    TextFile --> System : Confirm
+    System -> Account : Success
+    Account -> Home : Back to home
+' If transfer is unsuccessful
+else Unsuccessful Transfer
+    System -> Account : ERROR insufficient balance in other account
+    Account -> User : ERROR: Insufficent account balance
+end
+
 == Show Previous Transactions ==
 User -> Account : View previous transactions
 Account -> User : Show previous logs
