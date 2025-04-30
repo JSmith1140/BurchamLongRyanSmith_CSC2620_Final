@@ -41,6 +41,8 @@ public class TransactionsPanel extends JPanel {
         JRadioButton withdrawButton = new JRadioButton("Withdraw");
         JRadioButton sendButton = new JRadioButton("Send Money");   // <-- ADDED
         JRadioButton requestButton = new JRadioButton("Request Money"); // <-- ADDED
+        JRadioButton transferButton = new JRadioButton("Transfer"); // ✅ New option
+transferButton.setBackground(radioBg);
         depositButton.setBackground(radioBg);
         withdrawButton.setBackground(radioBg);
         sendButton.setBackground(radioBg);
@@ -51,11 +53,15 @@ public class TransactionsPanel extends JPanel {
         actionGroup.add(withdrawButton);
         actionGroup.add(sendButton);
         actionGroup.add(requestButton);
+        actionGroup.add(transferButton);
+
 
         transactionPanel.add(depositButton);
         transactionPanel.add(withdrawButton);
         transactionPanel.add(sendButton);
         transactionPanel.add(requestButton);
+        transactionPanel.add(transferButton); 
+
 
         // Account Type Panel
         JPanel accountPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -126,12 +132,13 @@ public class TransactionsPanel extends JPanel {
                 boolean isRequest = requestButton.isSelected();// <-- Added
                 boolean isChecking = checkingButton.isSelected();
                 boolean isSavings = savingsButton.isSelected();
-
-                if (!(isDeposit || isWithdraw || isSend || isRequest) || !(isChecking || isSavings)) {
+                boolean isTransfer = transferButton.isSelected();
+                if (!(isDeposit || isWithdraw || isSend || isRequest || isTransfer) || !(isChecking || isSavings)) {
                     JOptionPane.showMessageDialog(this, "Please select all options.", "Message",
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 }
+                
 
                 String accountType = isChecking ? "Checking" : "Savings";
 
@@ -187,6 +194,38 @@ public class TransactionsPanel extends JPanel {
                         JOptionPane.showMessageDialog(this, "Money request sent!");
                     } else {
                         JOptionPane.showMessageDialog(this, "Request failed or user is not online.");
+                    }
+                }
+                else if (isTransfer) {
+                    boolean success;
+                    String fromType = isChecking ? "Checking" : "Savings";
+                    String toType = isChecking ? "Savings" : "Checking";
+                
+                    if (isChecking) {
+                        // Transfer from Checking to Savings
+                        if (parentFrame.updateCheckingBalance(-amount)) {
+                            parentFrame.updateSavingsBalance(amount);
+                            success = true;
+                        } else {
+                            success = false;
+                        }
+                    } else {
+                        // Transfer from Savings to Checking
+                        if (parentFrame.updateSavingsBalance(-amount)) {
+                            parentFrame.updateCheckingBalance(amount);
+                            success = true;
+                        } else {
+                            success = false;
+                        }
+                    }
+                
+                    if (success) {
+                        parentFrame.updateCredentialsFile();
+                        logTransaction("Transferred $" + amount + " from " + fromType + " to " + toType);
+                        JOptionPane.showMessageDialog(this, "Transferred $" + amount + " from " + fromType + " to " + toType);
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Insufficient funds in " + fromType + " account.", "Transfer Failed",
+                                JOptionPane.ERROR_MESSAGE);
                     }
                 }
                 
