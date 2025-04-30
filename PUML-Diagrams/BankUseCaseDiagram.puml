@@ -32,8 +32,6 @@ rectangle "Transactions Tab" {
 
 ' Account Tab
 rectangle "Account Tab" {
-  usecase "Show Balances" as UC15
-  usecase "Transfer Between Accounts" as UC16
   usecase "Show Transaction History" as UC17
   usecase "Exit to Home Screen" as UC18
 }
